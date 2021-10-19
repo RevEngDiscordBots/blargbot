@@ -1,6 +1,7 @@
 import { Api } from '@api';
 import { BaseRoute } from '@api/BaseRoute';
 import { ApiResponse } from '@api/types';
+import { tagTypeDetails } from '@cluster/utils/constants/subtagType';
 
 export class SubtagsRoute extends BaseRoute {
     public constructor(private readonly api: Api) {
@@ -10,6 +11,8 @@ export class SubtagsRoute extends BaseRoute {
             get: () => this.listSubtags()
         }).addRoute('/:subtagName', {
             get: (req) => this.getSubtag(req.params.subtagName)
+        }).addRoute('/categories', {
+            get: () => this.getCategories()
         });
     }
 
@@ -23,5 +26,12 @@ export class SubtagsRoute extends BaseRoute {
         if (subtag === undefined)
             return this.notFound();
         return this.ok(subtag);
+    }
+
+    public getCategories(): Promise<ApiResponse> {
+        // we need to return a promise even though this is a sync route
+        return new Promise((res) => {
+            res(this.ok(tagTypeDetails));
+        });
     }
 }
