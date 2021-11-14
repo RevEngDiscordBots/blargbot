@@ -8,17 +8,15 @@ export class FunctionInvokeSubtag extends Subtag {
         super({
             name: 'func.',
             category: SubtagType.BOT,
-            hidden: true,
-            definition: [
-                {
-                    parameters: ['args*'],
-                    returns: 'string',
-                    execute: (ctx, args) => this.invokeFunction(ctx, args.subtagName.slice(5), args.map(arg => arg.value))
-                }
-            ]
+            hidden: true
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.context(),
+        Subtag.subtagName(n => n.replace(/^func\./i, '')),
+        Subtag.argument('args', 'string', { repeat: [0, Infinity] })
+    ])
     public async invokeFunction(context: BBTagContext, functionName: string, args: string[]): Promise<string> {
         const func = context.scopes.local.functions[functionName.toLowerCase()];
         if (func === undefined)

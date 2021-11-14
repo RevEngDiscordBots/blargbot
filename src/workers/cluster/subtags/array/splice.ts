@@ -11,10 +11,10 @@ export class SpliceSubtag extends Subtag {
     }
 
     @Subtag.signature('json[]', [
-        Subtag.parameter('array', 'json[]', { isVariableName: 'maybe' }),
-        Subtag.parameter('start', 'number', { useFallback: true }),
-        Subtag.parameter('deleteCount', 'number', { useFallback: true, default: 0 }),
-        Subtag.parameter('items', 'string', { repeat: [0, Infinity] })
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' }),
+        Subtag.argument('start', 'number', { useFallback: true }),
+        Subtag.argument('deleteCount', 'number', { useFallback: true, ifOmitted: 0 }),
+        Subtag.argument('items', 'string', { repeat: [0, Infinity] })
     ], {
         description: 'Removes `deleteCount` elements from `array` starting at `start` and returns them.\n' +
             'If any `items` were provided, this will then insert them all at the `start` index',

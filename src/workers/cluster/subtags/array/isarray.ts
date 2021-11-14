@@ -10,13 +10,13 @@ export class IsArraySubtag extends Subtag {
     }
 
     @Subtag.signature('boolean', [
-        Subtag.parameter('text', 'json[]', { default: undefined })
+        Subtag.argument('text', 'json[]', { ifInvalid: undefined })
     ], {
         description: 'Determines whether `text` is a valid array.',
         exampleCode: '{isarray;["array?"]} {isarray;array?}',
         exampleOut: 'true false'
     })
-    public isArray(array: JArray | undefined): boolean {
-        return array !== undefined;
+    public isArray(array: unknown): boolean {
+        return Array.isArray(array);
     }
 }

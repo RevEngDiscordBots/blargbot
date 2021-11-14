@@ -11,7 +11,7 @@ export class ArgsSubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.context
+        Subtag.context()
     ], {
         description: 'Gets the whole user input',
         exampleCode: 'You said {args}',
@@ -23,8 +23,8 @@ export class ArgsSubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.context,
-        Subtag.parameter('index', 'integer')
+        Subtag.context(),
+        Subtag.argument('index', 'integer')
     ], {
         description: 'Gets a word from the user input at the `index` position',
         exampleCode: '{args;1}',
@@ -36,9 +36,9 @@ export class ArgsSubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.context,
-        Subtag.parameter('start', 'integer'),
-        Subtag.parameter('end', 'integer', { ifInvalid: parseEnd })
+        Subtag.context(),
+        Subtag.argument('start', 'integer'),
+        Subtag.argument('end', 'integer', { ifInvalid: parseEnd })
     ], {
         description: 'Gets all the words in the user input from `start` up to `end`. If `end` is `n` then all words after `start` will be returned. ' +
             '`start` and `end` will be sorted first if they arent in order.',

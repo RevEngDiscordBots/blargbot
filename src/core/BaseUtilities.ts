@@ -145,8 +145,7 @@ export class BaseUtilities {
         if (!guard.checkEmbedSize(payload.embeds)) {
             const id = await this.generateOutputPage(payload, channel);
             const output = this.websiteLink('/output');
-            payload.content = 'Oops! I tried to send a message that was too long. If you think this is a bug, please report it!\n' +
-                '\n' +
+            payload.content = 'Oops! I tried to send a message that was too long. If you think this is a bug, please report it!\n\n' +
                 `To see what I would have said, please visit ${output}${id.toString()}`;
             if (payload.embeds !== undefined)
                 delete payload.embeds;
@@ -170,24 +169,26 @@ export class BaseUtilities {
                 throw error;
 
             const code = error.code;
-            if (!guard.hasProperty(sendErrors, code)) {
+            if (!guard.hasProperty(sendErrors, code))
                 return undefined;
-            }
 
-            let result = await sendErrors[code](this, channel, payload, error);
-            if (typeof result === 'string' && author !== undefined && await this.canDmErrors(author.id)) {
-                if (guard.isGuildChannel(channel))
-                    result += `\nGuild: ${channel.guild.name} (${channel.guild.id})`;
+            const result = await sendErrors[code](this, channel, payload, error);
+            if (typeof result !== 'string' || author === undefined || !await this.canDmErrors(author.id))
+                return undefined;
 
-                const name = guard.isGuildChannel(channel) ? channel.name : 'PRIVATE CHANNEL';
-                result += `\nChannel: ${name} (${channel.id})`;
-                result += '\n\nIf you wish to stop seeing these messages, do the command `dmerrors`.';
+            const content = [result];
+            if (guard.isGuildChannel(channel))
+                content.push(`Guild: ${channel.guild.name} (${channel.guild.id})`);
 
-                await this.sendDM(author.id, {
-                    content: result,
-                    reply: payload.reply
-                });
-            }
+            const name = guard.isGuildChannel(channel) ? channel.name : 'PRIVATE CHANNEL';
+            content.push(`Channel: ${name} (${channel.id})`);
+            content.push('');
+            content.push('If you wish to stop seeing these messages, do the command `dmerrors`.');
+
+            await this.sendDM(author.id, {
+                content: content.join('\n'),
+                reply: payload.reply
+            });
             return undefined;
         }
     }

@@ -6,21 +6,20 @@ export class ExecSubtag extends Subtag {
     public constructor() {
         super({
             name: 'exec',
-            category: SubtagType.BOT,
-            definition: [
-                {
-                    parameters: ['tag', 'args*'],
-                    description: 'Executes another `tag`, giving it `args` as the input. Useful for modules.' +
-                        '\n`{exec}` executes `tag` as if `tag`\'s code was in the root tag/ccommand.',
-                    exampleCode: 'Let me do a tag for you. {exec;f}',
-                    exampleOut: 'Let me do a tag for you. User#1111 has paid their respects. Total respects given: 5',
-                    returns: 'string',
-                    execute: (ctx, [tag, ...args]) => this.execTag(ctx, tag.value, args.map(a => a.value))
-                }
-            ]
+            category: SubtagType.BOT
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.context(),
+        Subtag.argument('tagName', 'string'),
+        Subtag.argument('args', 'string', { repeat: [0, Infinity] })
+    ], {
+        description: 'Executes another `tag`, giving it `args` as the input. Useful for modules.' +
+            '\n`{exec}` executes `tag` as if `tag`\'s code was in the root tag/ccommand.',
+        exampleCode: 'Let me do a tag for you. {exec;f}',
+        exampleOut: 'Let me do a tag for you. User#1111 has paid their respects. Total respects given: 5'
+    })
     public async execTag(context: BBTagContext, name: string, args: string[]): Promise<string> {
         const tagName = name.toLowerCase();
         const tag = await context.getCached('tag', tagName, (key) => context.database.tags.get(key));

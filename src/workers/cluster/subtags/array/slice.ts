@@ -10,9 +10,9 @@ export class SliceSubtag extends Subtag {
     }
 
     @Subtag.signature('json[]', [
-        Subtag.parameter('array', 'json[]', { isVariableName: 'maybe' }),
-        Subtag.parameter('start', 'number', { useFallback: true }),
-        Subtag.parameter('end', 'number', { useFallback: true, default: Infinity })
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' }),
+        Subtag.argument('start', 'number', { useFallback: true }),
+        Subtag.argument('end', 'number', { useFallback: true, ifOmitted: Infinity })
     ], {
         description: '`end` defaults to the length of the array.\n\n' +
             'Grabs elements between the zero-indexed `start` and `end` points (inclusive) from `array`.',

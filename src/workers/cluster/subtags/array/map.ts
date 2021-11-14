@@ -11,10 +11,10 @@ export class MapSubtag extends Subtag {
     }
 
     @Subtag.signature('(string|error)[]', [
-        Subtag.context,
-        Subtag.parameter('variable', 'string'),
-        Subtag.parameter('array', 'json[]', { isVariableName: 'maybe' }),
-        Subtag.parameter('code', 'deferred')
+        Subtag.context(),
+        Subtag.argument('variable', 'string'),
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' }),
+        Subtag.argument('code', 'deferred')
     ], {
         description: 'Provides a way to populate an array by executing a function on each of its elements,' +
             ' more info [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map)\n' +

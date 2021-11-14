@@ -6,20 +6,17 @@ export class ParamsLengthSubtag extends Subtag {
     public constructor() {
         super({
             name: 'paramslength',
-            category: SubtagType.BOT,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Gets the number of parameters passed to the current function',
-                    exampleCode: '{func.test;{paramslength}}\n{func.test;a;b;c;d}',
-                    exampleOut: '["a","b","c","d"]',
-                    returns: 'number',
-                    execute: (ctx) => this.getParamsLength(ctx)
-                }
-            ]
+            category: SubtagType.BOT
         });
     }
 
+    @Subtag.signature('number', [
+        Subtag.context()
+    ], {
+        description: 'Gets the number of parameters passed to the current function',
+        exampleCode: '{func.test;{paramslength}}\n{func.test;a;b;c;d}',
+        exampleOut: '["a","b","c","d"]'
+    })
     public getParamsLength(context: BBTagContext): number {
         const params = context.scopes.local.paramsarray;
         if (params === undefined)

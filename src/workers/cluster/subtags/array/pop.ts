@@ -9,8 +9,8 @@ export class PopSubtag extends Subtag {
         });
     }
 
-    @Subtag.signature('json|nothing', [
-        Subtag.parameter('array', 'json[]', { isVariableName: 'maybe' })
+    @Subtag.signature('json?', [
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' })
     ], {
         description: 'Returns the last element in `array`. If provided a variable, this will remove the last element from `array`as well.',
         exampleCode: '{pop;["this", "is", "an", "array"]}',

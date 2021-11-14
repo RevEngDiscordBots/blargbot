@@ -83,7 +83,11 @@ export type CommandManagerTypeMap = {
 
 export type CommandManagers = { [P in keyof CommandManagerTypeMap]: ICommandManager<CommandManagerTypeMap[P]> }
 
-export type Statement = ReadonlyArray<string | SubtagCall>;
+export interface Statement extends ReadonlyArray<string | SubtagCall> {
+    readonly source: string;
+    readonly start: SourceMarker;
+    readonly end: SourceMarker;
+}
 
 export interface AnalysisResults {
     readonly errors: AnalysisResult[];

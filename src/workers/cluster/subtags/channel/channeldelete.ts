@@ -1,36 +1,25 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { BBTagRuntimeError } from '@cluster/bbtag/errors';
 import { discordUtil, SubtagType } from '@cluster/utils';
+import { GuildChannels } from 'discord.js';
 
 export class ChannelDeleteSubtag extends Subtag {
     public constructor() {
         super({
             name: 'channeldelete',
-            category: SubtagType.CHANNEL,
-            definition: [
-                {
-                    parameters: ['id'],
-                    description: 'Deletes the provided `channel`.',
-                    exampleCode: '{channeldelete;11111111111111111}',
-                    exampleOut: '',
-                    returns: 'nothing',
-                    execute: (ctx, [channel]) => this.deleteChannel(ctx, channel.value)
-                }
-            ]
+            category: SubtagType.CHANNEL
         });
     }
 
-    public async deleteChannel(context: BBTagContext, channelStr: string): Promise<void> {
-        const channel = await context.queryChannel(channelStr);
-
-        /**
-         * TODO change this to "No channel found" for consistency
-         * * when versioning is out and about
-         */
-        if (channel === undefined)
-            throw new BBTagRuntimeError('Channel does not exist');
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' })
+    ], {
+        description: 'Deletes the provided `channel`.',
+        exampleCode: '{channeldelete;11111111111111111}'
+    })
+    public async deleteChannel(context: BBTagContext, channel: GuildChannels): Promise<void> {
         const permission = channel.permissionsFor(context.authorizer);
-
         if (permission?.has('MANAGE_CHANNELS') !== true)
             throw new BBTagRuntimeError('Author cannot edit this channel');
 

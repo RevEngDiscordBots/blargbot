@@ -1,8 +1,10 @@
-import { AnySubtagHandlerDefinition, BBTagArray, BBTagMaybeRef, BBTagRef, CompositeSubtagHandler, SubtagCall, SubtagHandlerCallSignature, SubtagOptions, SubtagResult } from '@cluster/types';
+import { BBTagMaybeRef, BBTagRef, CompositeSubtagHandler, Statement, SubtagCall, SubtagHandlerCallSignature, SubtagOptions, SubtagResult } from '@cluster/types';
 import { SubtagType } from '@cluster/utils';
 import { metrics } from '@core/Metrics';
 import { Timer } from '@core/Timer';
-import { MessageEmbedOptions } from 'discord.js';
+import { Snowflake } from 'catflake';
+import { Emoji, GuildChannels, GuildMember, MessageEmbedOptions, Role, User } from 'discord.js';
+import { Duration } from 'moment';
 
 import { BBTagContext } from './BBTagContext';
 import { compileSignatures, parseDefinitions } from './compilation';
@@ -12,7 +14,6 @@ export abstract class Subtag implements SubtagOptions {
     public readonly name: string;
     public readonly aliases: readonly string[];
     public readonly category: SubtagType;
-    public readonly isTag: true;
     public readonly desc: string | undefined;
     public readonly deprecated: string | boolean;
     public readonly staff: boolean;
@@ -24,7 +25,6 @@ export abstract class Subtag implements SubtagOptions {
         this.name = options.name;
         this.aliases = options.aliases ?? [];
         this.category = options.category;
-        this.isTag = true;
         this.desc = options.desc;
         this.deprecated = options.deprecated ?? false;
         this.staff = options.staff ?? false;
@@ -50,50 +50,91 @@ export abstract class Subtag implements SubtagOptions {
         return docs;
     }
 
-    public static signature<Return extends SubtagReturnType>(
-        returns: Return,
-        details?: SubtagSignatureOptions
-    ): SubtagSignatureDecorator<Return, []>;
-    public static signature<Return extends SubtagReturnType, Parameters extends readonly SubtagParameterDescriptor[] | []>(
-        returns: Return,
-        parameters: Parameters,
-        details?: SubtagSignatureOptions
-    ): SubtagSignatureDecorator<Return, Parameters>;
+    public static signature<Return extends SubtagReturnType, Parameters extends readonly SubtagParameterDescriptor[] | []>(returns: Return, parameters: Parameters, details?: SubtagSignatureOptions): SubtagSignatureDecorator<Return, Parameters> {
+        returns;
+        parameters;
+        details;
+        throw new Error('NotImplemented');
+    }
 
-    public static parameter<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options?: SubtagParameterOptions<Type>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type]>;
-    public static parameter<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options: RepeatedSubtagParameterOptions<Type>): NamedSubtagParameterDescriptor<Name, Array<SubtagArgumentTypeMap[Type]>>;
-    public static parameter<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: OptionalSubtagParameterOptions<Type, Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Default>;
+    public static argument<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options?: SubtagParameterOptions<SubtagArgumentTypeMap[Type]>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type]>;
+    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options?: SubtagFallbackParameterOptions<SubtagArgumentTypeMap[Type] | Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Default>;
+    public static argument<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options: RepeatedSubtagParameterOptions<Array<SubtagArgumentTypeMap[Type]>>): NamedSubtagParameterDescriptor<Name, Array<SubtagArgumentTypeMap[Type]>>;
+    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: RepeatedFallbackSubtagParameterOptions<Array<SubtagArgumentTypeMap[Type] | Default>>): NamedSubtagParameterDescriptor<Name, Array<SubtagArgumentTypeMap[Type] | Default>>;
+    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: OptionalSubtagParameterOptions<SubtagArgumentTypeMap[Type] | Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Default>;
+    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: OptionalFallbackSubtagParameterOptions<SubtagArgumentTypeMap[Type] | Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Default>;
+    public static argument<T>(name: string, type: SubtagArgumentType, options?: AnySubtagParameterOptions<T>): NamedSubtagParameterDescriptor<string, T> {
+        name;
+        type;
+        options;
+        throw new Error('NotImplemented');
+    }
 
-    public static parameterGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>>(parameters: Parameters): SubtagParameterDescriptor<SubtagParameterGroupValue<Parameters>>;
-    public static parameterGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>>(parameters: Parameters, options: RepeatedSubtagParameterGroupOptions): SubtagParameterDescriptor<Array<SubtagParameterGroupValue<Parameters>>>;
-    public static parameterGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>, Result>(parameters: Parameters, options: MappedSubtagParameterGroupOptions<SubtagParameterGroupValue<Parameters>, Result>): SubtagParameterDescriptor<Result>;
-    public static parameterGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>, Result>(parameters: Parameters, options: MappedRepeatedSubtagParameterGroupOptions<SubtagParameterGroupValue<Parameters>, Result>): SubtagParameterDescriptor<Result[]>;
+    public static argumentGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>>(parameters: Parameters): SubtagParameterDescriptor<SubtagParameterGroupValue<Parameters>>;
+    public static argumentGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>>(parameters: Parameters, options: RepeatedSubtagParameterGroupOptions): SubtagParameterDescriptor<Array<SubtagParameterGroupValue<Parameters>>>;
+    public static argumentGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>, Result>(parameters: Parameters, options: MappedSubtagParameterGroupOptions<SubtagParameterGroupValue<Parameters>, Result>): SubtagParameterDescriptor<Result>;
+    public static argumentGroup<Parameters extends ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>, Result>(parameters: Parameters, options: MappedRepeatedSubtagParameterGroupOptions<SubtagParameterGroupValue<Parameters>, Result>): SubtagParameterDescriptor<Result[]>;
+    public static argumentGroup<T>(parameters: ReadonlyArray<NamedSubtagParameterDescriptor<string, unknown>>, options?: AnySubtagParameterGroupOptions<T>): SubtagParameterDescriptor<unknown> {
+        parameters;
+        options;
+        throw new Error('NotImplemented');
+    }
 
-    public static readonly context: SubtagParameterDescriptor<BBTagContext>;
     public static context(): SubtagParameterDescriptor<BBTagContext>;
     public static context<T>(getValue: (context: BBTagContext) => T): SubtagParameterDescriptor<T>;
+    public static context(getValue?: (context: BBTagContext) => unknown): SubtagParameterDescriptor<unknown> {
+        getValue;
+        throw new Error('NotImplemented');
+    }
 
-    public static readonly subtagCode: SubtagParameterDescriptor<SubtagCall>;
-    public static subtagCode(): SubtagParameterDescriptor<SubtagCall>;
-    public static subtagCode<T>(getValue: (subtag: SubtagCall) => T): SubtagParameterDescriptor<T>;
+    public static subtagAST(): SubtagParameterDescriptor<SubtagCall>;
+    public static subtagAST<T>(getValue: (subtag: SubtagCall) => T): SubtagParameterDescriptor<T>;
+    public static subtagAST(getValue?: (subtag: SubtagCall) => unknown): SubtagParameterDescriptor<unknown> {
+        getValue;
+        throw new Error('NotImplemented');
+    }
 
-    public static readonly subtagName: SubtagParameterDescriptor<string>;
+    public static subtagName(): SubtagParameterDescriptor<string>
+    public static subtagName<T>(getValue: (name: string) => T): SubtagParameterDescriptor<T>
+    public static subtagName(getValue?: (name: string) => unknown): SubtagParameterDescriptor<unknown> {
+        getValue;
+        throw new Error('NotImplemented');
+    }
 
-    public static useValue<T>(value: T): SubtagParameterDescriptor<T>;
+    public static quietArgument(): NamedSubtagParameterDescriptor<'quiet', boolean>;
+    public static quietArgument<T extends string>(name: T): NamedSubtagParameterDescriptor<T, boolean>;
+    public static quietArgument(name = 'quiet'): NamedSubtagParameterDescriptor<string, boolean> {
+        name;
+        throw new Error('NotImplemented');
+    }
+
+    public static useValue<T>(value: T): SubtagParameterDescriptor<T> {
+        value;
+        throw new Error('NotImplemented');
+    }
 }
 
 type Iterated<T> = Iterable<T> | AsyncIterable<T>;
 
-type SubtagReturnTypeMap = {
-    'string': string;
-    'string[]': Iterated<string>;
-    'nothing': void;
-    'json|nothing': JToken | undefined;
-    'json[]': JArray;
-    'json[]|nothing': JArray | undefined;
-    'boolean': boolean;
-    '(string|error)[]': Iterated<JToken>;
-}
+type SubtagReturnTypeMapGenerator<TypeName extends string, Type> =
+    & Record<TypeName, Type>
+    & Record<`${TypeName}?`, Type | undefined>
+    & Record<`${TypeName}[]`, Iterated<Type>>
+    & Record<`${TypeName}[]?`, Iterated<Type> | undefined>
+    & Record<`${TypeName}?[]`, Iterated<Type | undefined>>
+
+type SubtagReturnTypeMap =
+    & SubtagReturnTypeMapGenerator<'string', string>
+    & SubtagReturnTypeMapGenerator<'boolean', boolean>
+    & SubtagReturnTypeMapGenerator<'number' | 'integer' | 'float' | 'color', number>
+    & SubtagReturnTypeMapGenerator<'snowflake', Snowflake>
+    & SubtagReturnTypeMapGenerator<'json', JToken>
+    & {
+        'nothing': void;
+        'error': never;
+        'loop': Iterated<JToken>;
+        '(string|error)[]': Iterated<JToken>;
+    }
 
 type SubtagReturnType = keyof SubtagReturnTypeMap;
 
@@ -102,7 +143,15 @@ type SubtagArgumentTypeMapCore = {
     'integer': number;
     'number': number;
     'float': number;
+    'color': number;
+    'duration': Duration;
     'boolean': boolean;
+    'json': JToken;
+    'user': User;
+    'member': GuildMember;
+    'channel': GuildChannels;
+    'role': Role;
+    'emoji': Emoji;
     'json[]': JArray;
 }
 type SubtagArgumentTypeMap =
@@ -111,6 +160,8 @@ type SubtagArgumentTypeMap =
     & { [P in keyof SubtagArgumentTypeMapCore as `${P}~`]: BBTagMaybeRef<SubtagArgumentTypeMapCore[P]> }
     & {
         'deferred': () => Awaitable<string>;
+        'ast': Statement;
+        'json?': JToken | undefined;
     }
 
 type SubtagArgumentType = keyof SubtagArgumentTypeMap;
@@ -139,15 +190,14 @@ interface ParseFailure<T> extends BaseParseResult<T> {
 
 export type ParseResult<T> = ParseSuccess<T> | ParseFailure<T>;
 
-interface SubtagPrimitiveParameterOptions<T> {
+interface SubtagPrimitiveParameterOptions {
     readonly useFallback?: boolean;
-    readonly ifInvalid?: (value: string) => ParseResult<T>;
 }
 
 type SubtagStringParameterOptions = unknown;
 
-type SubtagNumberParameterOptions = SubtagPrimitiveParameterOptions<number>
-interface SubtagBooleanParameterOptions extends SubtagPrimitiveParameterOptions<boolean> {
+type SubtagNumberParameterOptions = SubtagPrimitiveParameterOptions
+interface SubtagBooleanParameterOptions extends SubtagPrimitiveParameterOptions {
     readonly mode?: 'parse' | 'notEmpty' | 'tryParseOrNotEmpty';
 }
 
@@ -156,20 +206,43 @@ type TypeSpecificSubtagParameterOptions<Type> =
     & (Type extends string ? SubtagStringParameterOptions : unknown)
     & (Type extends boolean ? SubtagBooleanParameterOptions : unknown)
 
-type SubtagParameterOptions<Type extends SubtagArgumentType> = TypeSpecificSubtagParameterOptions<SubtagArgumentTypeMap[Type]> & {
+type SubtagParameterOptions<Type> = TypeSpecificSubtagParameterOptions<Type> & {
     readonly isVariableName?: boolean | 'maybe';
+    readonly guard?: (value: Type) => boolean;
+    readonly maxSourceLength?: number;
+    readonly ifQuiet?: string;
+    readonly customError?: string | ((value: string) => BBTagRuntimeError | string);
 }
 
-type RepeatedSubtagParameterOptions<Type extends SubtagArgumentType> = SubtagParameterOptions<Type> & {
+type SubtagFallbackParameterOptions<Type> = SubtagParameterOptions<Type> & {
+    readonly ifInvalid: Type | ((value: string) => ParseResult<Type>);
+}
+
+type RepeatedSubtagParameterOptions<Type> = SubtagParameterOptions<Type> & {
     readonly repeat: readonly [minCount: number, maxCount: number];
 }
 
-type OptionalSubtagParameterOptions<Type extends SubtagArgumentType, Default> = SubtagParameterOptions<Type> & {
-    readonly default: Default;
+type RepeatedFallbackSubtagParameterOptions<Type> = RepeatedSubtagParameterOptions<Type> & SubtagFallbackParameterOptions<Type>;
+
+type OptionalSubtagParameterOptions<Type> = SubtagParameterOptions<Type> & {
+    readonly ifOmitted: Type;
 }
 
+type OptionalFallbackSubtagParameterOptions<Type> = OptionalSubtagParameterOptions<Type> & SubtagFallbackParameterOptions<Type>;
+
+type AnySubtagParameterOptions<T> =
+    | SubtagParameterOptions<T>
+    | SubtagFallbackParameterOptions<T>
+    | RepeatedSubtagParameterOptions<T>
+    | RepeatedFallbackSubtagParameterOptions<T>
+    | OptionalSubtagParameterOptions<T>
+    | OptionalFallbackSubtagParameterOptions<T>
+
 interface SubtagParameterDescriptor<T = unknown> {
-    getValue(context: BBTagContext, subtag: SubtagCall): Awaitable<T>;
+    readonly minArgs: number;
+    readonly maxArgs: number;
+    readonly argGroupSize: number;
+    getValue(context: BBTagContext, subtag: SubtagCall, index: number): Awaitable<T>;
 }
 
 interface NamedSubtagParameterDescriptor<Name extends string, Type> extends SubtagParameterDescriptor<Type> {
@@ -187,6 +260,11 @@ interface MappedSubtagParameterGroupOptions<Source, Result> {
 interface MappedRepeatedSubtagParameterGroupOptions<Source, Result> extends RepeatedSubtagParameterGroupOptions, MappedSubtagParameterGroupOptions<Source, Result> {
 
 }
+
+type AnySubtagParameterGroupOptions<T> =
+    | RepeatedSubtagParameterGroupOptions
+    | MappedSubtagParameterGroupOptions<T, unknown>
+    | MappedRepeatedSubtagParameterGroupOptions<T, unknown>
 
 type ParameterType<T> = T extends SubtagParameterDescriptor<infer R> ? R : never;
 type ParameterTypes<Parameters> = { [P in keyof Parameters]: ParameterType<Parameters[P]>; }

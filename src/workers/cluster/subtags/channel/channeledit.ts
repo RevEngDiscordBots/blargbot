@@ -9,42 +9,31 @@ export class ChannelEditSubtag extends Subtag {
     public constructor() {
         super({
             name: 'channeledit',
-            category: SubtagType.CHANNEL,
-            definition: [
-                {
-                    parameters: ['channel', 'options?:{}'],
-                    description: 'Edits a channel with the given information.\n' +
-                        '`options` is a JSON object, containing any or all of the following properties:\n' +
-                        '- `name`\n' +
-                        '- `topic`\n' +
-                        '- `nsfw`\n' +
-                        '- `parentID`\n' +
-                        '- `reason` (displayed in audit log)\n' +
-                        '- `rateLimitPerUser`\n' +
-                        '- `bitrate` (voice)\n' +
-                        '- `userLimit` (voice)\n' +
-                        'Returns the channel\'s ID.',
-                    exampleCode: '{channeledit;11111111111111111;{j;{"name": "super-cool-channel"}}}',
-                    exampleOut: '11111111111111111',
-                    returns: 'id',
-                    execute: (ctx, [channel, options]) => this.channelEdit(ctx, channel.value, options.value)
-                }
-            ]
+            category: SubtagType.CHANNEL
         });
     }
 
-    public async channelEdit(
-        context: BBTagContext,
-        channelStr: string,
-        options: string
-    ): Promise<string> {
-        const channel = await context.queryChannel(channelStr);
-
-        if (channel === undefined)
-            throw new BBTagRuntimeError('Channel does not exist');//TODO no channel found error
-
+    @Subtag.signature('snowflake', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
+        Subtag.argument('options', 'string', { ifOmitted: '{}' }) // TODO integrate mapping framework somehow?
+    ], {
+        description: 'Edits a channel with the given information.\n' +
+            '`options` is a JSON object, containing any or all of the following properties:\n' +
+            '- `name`\n' +
+            '- `topic`\n' +
+            '- `nsfw`\n' +
+            '- `parentID`\n' +
+            '- `reason` (displayed in audit log)\n' +
+            '- `rateLimitPerUser`\n' +
+            '- `bitrate` (voice)\n' +
+            '- `userLimit` (voice)\n' +
+            'Returns the channel\'s ID.',
+        exampleCode: '{channeledit;11111111111111111;{j;{"name": "super-cool-channel"}}}',
+        exampleOut: '11111111111111111'
+    })
+    public async channelEdit(context: BBTagContext, channel: GuildChannels, options: string): Promise<string> {
         const permission = channel.permissionsFor(context.authorizer);
-
         if (permission?.has('MANAGE_CHANNELS') !== true)
             throw new BBTagRuntimeError('Author cannot edit this channel');
 
@@ -59,22 +48,16 @@ export class ChannelEditSubtag extends Subtag {
         editJson: string,
         mapping: TypeMapping<T>
     ): Promise<string> {
-        let options: T;
-        try {
-            const mapped = mapping(editJson);
-            if (!mapped.valid)
-                throw new BBTagRuntimeError('Invalid JSON');
-            options = mapped.value;
-        } catch (e: unknown) {
+        const options = mapping(editJson);
+        if (!options.valid)
             throw new BBTagRuntimeError('Invalid JSON');
-        }
 
         try {
             const fullReason = discordUtil.formatAuditReason(
                 context.user,
                 context.scopes.local.reason ?? ''
             );
-            await channel.edit(options, fullReason);
+            await channel.edit(options.value, fullReason);
             return channel.id;
         } catch (err: unknown) {
             context.logger.error(err);

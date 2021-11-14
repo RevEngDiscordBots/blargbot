@@ -9,8 +9,8 @@ export class ShiftSubtag extends Subtag {
         });
     }
 
-    @Subtag.signature('json|nothing', [
-        Subtag.parameter('array', 'json[]', { isVariableName: 'maybe' })
+    @Subtag.signature('json?', [
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' })
     ], {
         description: 'Returns the first element in `array`. If used with a variable this will remove the first element from `array` as well.',
         exampleCode: '{shift;["this", "is", "an", "array"]}',

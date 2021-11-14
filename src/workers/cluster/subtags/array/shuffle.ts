@@ -11,7 +11,7 @@ export class ShuffleSubtag extends Subtag {
     }
 
     @Subtag.signature('nothing', [
-        Subtag.context
+        Subtag.context()
     ], {
         description: 'Shuffles the `{args}` the user provided.',
         exampleCode: '{shuffle} {args;0} {args;1} {args;2}',
@@ -23,17 +23,17 @@ export class ShuffleSubtag extends Subtag {
     }
 
     @Subtag.signature('nothing', [
-        Subtag.parameter('array', 'json[]*')
+        Subtag.argument('array', 'json[]*')
     ], {
         description: 'Shuffles the `array` given and updates the variable',
         exampleCode: '{shuffle;{get;~myarray}}'
     })
-    public shuffleVariable(array: BBTagRef<JArray>): void {
+    public shuffleReference(array: BBTagRef<JArray>): void {
         shuffle(array.value);
     }
 
     @Subtag.signature('json[]', [
-        Subtag.parameter('array', 'json[]')
+        Subtag.argument('array', 'json[]')
     ], {
         description: 'Shuffles and returns the given `array`',
         exampleCode: '{shuffle;{get;~myarray}}'

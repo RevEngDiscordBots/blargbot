@@ -8,64 +8,45 @@ export class ChannelCreateSubtag extends Subtag {
         super({
             name: 'channelcreate',
             category: SubtagType.CHANNEL,
-            desc: '`type` is either `text`, `voice`, `category`, `news` or `store`.\n',
-            definition: [
-                {
-                    parameters: ['name', 'type?:text'],
-                    description: 'Creates a channel of type `type`',
-                    exampleCode: '{channelcreate;super-voice-channel;voice}',
-                    exampleOut: '11111111111111111',
-                    returns: 'id',
-                    execute: (ctx, [name, type]) => this.channelCreate(ctx, name.value, type.value, '{}')
-                },
-                {
-                    parameters: ['name', 'type:text', 'options:{}'],
-                    description: 'Creates a channel with the specified `options` of type `type`' +
-                        '`options` is a JSON object, containing any or all of the following properties:\n' +
-                        '- `topic`\n' +
-                        '- `nsfw`\n' +
-                        '- `parentID`\n' +
-                        '- `reason` (displayed in audit log)\n' +
-                        '- `rateLimitPerUser`\n' +
-                        '- `bitrate` (voice)\n' +
-                        '- `userLimit` (voice)\n' +
-                        'Returns the new channel\'s ID.',
-                    exampleCode: '{channelcreate;super-channel;;{json;{"parentID":"11111111111111111"}}}',
-                    exampleOut: '22222222222222222',
-                    returns: 'id',
-                    execute: (ctx, [name, type, options]) => this.channelCreate(ctx, name.value, type.value, options.value)
-                }
-            ]
+            desc: '`type` is either `text`, `voice`, `category`, `news` or `store`.\n'
         });
     }
 
-    public async channelCreate(
-        context: BBTagContext,
-        name: string,
-        typeKey: string,
-        optionsJson: string
-    ): Promise<string> {
+    @Subtag.signature('snowflake', [
+        Subtag.context(),
+        Subtag.argument('name', 'string'),
+        Subtag.argument('type', 'string', { ifOmitted: 'text' }),
+        Subtag.argument('options', 'string', { ifOmitted: '{}' }) // TODO integrate mapping framework somehow?
+    ], {
+        description: 'Creates a channel with the specified `options` of type `type`' +
+            '`options` is a JSON object, containing any or all of the following properties:\n' +
+            '- `topic`\n' +
+            '- `nsfw`\n' +
+            '- `parentID`\n' +
+            '- `reason` (displayed in audit log)\n' +
+            '- `rateLimitPerUser`\n' +
+            '- `bitrate` (voice)\n' +
+            '- `userLimit` (voice)\n' +
+            'Returns the new channel\'s ID.',
+        exampleCode: '{channelcreate;super-channel;;{json;{"parentID":"11111111111111111"}}}',
+        exampleOut: '22222222222222222'
+    })
+    public async channelCreate(context: BBTagContext, name: string, typeKey: string, optionsJson: string): Promise<string> {
         const permissions = context.permissions;
         if (permissions.has('MANAGE_CHANNELS') !== true)
             throw new BBTagRuntimeError('Author cannot create channels');
 
-        let options: GuildChannelCreateOptions;
-        try {
-            const mapped = mapOptions(optionsJson);
-            if (!mapped.valid)
-                throw new BBTagRuntimeError('Invalid JSON');
-            options = mapped.value;
-        } catch (e: unknown) {
+        const options = mapOptions(optionsJson);
+        if (!options.valid)
             throw new BBTagRuntimeError('Invalid JSON');
-        }
 
-        options.type = guard.hasProperty(channelTypes, typeKey) ? channelTypes[typeKey] : undefined;
+        options.value.type = guard.hasProperty(channelTypes, typeKey) ? channelTypes[typeKey] : undefined;
 
         try {
-            options.reason = context.scopes.local.reason !== undefined
+            options.value.reason = context.scopes.local.reason !== undefined
                 ? discordUtil.formatAuditReason(context.user, context.scopes.local.reason)
-                : options.reason;
-            const channel = await context.guild.channels.create(name, options);
+                : options.value.reason;
+            const channel = await context.guild.channels.create(name, options.value);
             return channel.id;
         } catch (err: unknown) {
             context.logger.error(err);

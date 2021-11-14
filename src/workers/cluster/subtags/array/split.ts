@@ -10,8 +10,8 @@ export class SplitSubtag extends Subtag {
     }
 
     @Subtag.signature('string[]', [
-        Subtag.parameter('text', 'string'),
-        Subtag.parameter('splitter', 'string')
+        Subtag.argument('text', 'string'),
+        Subtag.argument('splitter', 'string')
     ], {
         description: 'Splits `text` using `splitter`, and the returns an array.',
         exampleCode: '{split;Hello! This is a sentence.;{space}}',

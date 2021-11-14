@@ -1,28 +1,20 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { RuntimeReturnState } from '@cluster/types';
-import { parse, SubtagType } from '@cluster/utils';
+import { SubtagType } from '@cluster/utils';
 
 export class ReturnSubtag extends Subtag {
     public constructor() {
         super({
             name: 'return',
-            category: SubtagType.BOT,
-            definition: [
-                {
-                    parameters: ['force?:true'],
-                    description: 'Stops execution of the tag and returns what has been parsed. ' +
-                        'If `force` is `true` then it will also return from any tags calling this tag.',
-                    exampleCode: 'This will display. {return} This will not.',
-                    exampleOut: 'This will display.',
-                    returns: 'nothing',
-                    execute: (context, [forcedStr]) => this.setReturn(context, forcedStr.value)
-                }
-            ]
+            category: SubtagType.BOT
         });
     }
 
-    public setReturn(context: BBTagContext, forcedStr: string): void {
-        const forced = parse.boolean(forcedStr, true);
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('force', 'boolean', { ifOmitted: true, ifInvalid: true })
+    ])
+    public setReturn(context: BBTagContext, forced: boolean): void {
         context.state.return = forced ? RuntimeReturnState.ALL : RuntimeReturnState.CURRENTTAG;
     }
 }

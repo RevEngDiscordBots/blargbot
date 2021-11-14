@@ -10,7 +10,7 @@ export class ConcatSubtag extends Subtag {
     }
 
     @Subtag.signature('json[]', [
-        Subtag.parameter('values', 'string', { repeat: [0, Infinity] })
+        Subtag.argument('values', 'string', { repeat: [0, Infinity] })
     ], {
         description: 'Takes `values` and joins them together to form a single array. If `values` is an array, it\'s flattened into the resulting array.',
         exampleCode: 'Two arrays: {concat;["this", "is"];["an", "array"]}\nStrings and an array: {concat;a;b;c;[1, 2, 3]}',

@@ -1,6 +1,5 @@
 import { BBTagContext, Subtag, tagVariableScopes } from '@cluster/bbtag';
 import { BBTagRuntimeError } from '@cluster/bbtag/errors';
-import { SubtagArgument } from '@cluster/types';
 import { SubtagType } from '@cluster/utils';
 import ReadWriteLock from 'rwlock';
 
@@ -19,41 +18,36 @@ export class LockSubtag extends Subtag {
                 'it can aquire a lock.' +
                 '\n\n`mode` must be either `read` or `write`.' +
                 '\n`key` can be anything. This follows the same scoping rules as variables do.' +
-                '\n`code` will be run once the lock is acquired',
-            definition: [
-                {
-                    parameters: ['mode', 'key', '~code'],
-                    exampleCode:
-                        '\n{//;in 2 command run in quick succession}' +
-                        '\n{lock;write;key;' +
-                        '\n  {void;' +
-                        '\n    {send;{channelid};Start}' +
-                        '\n    {send;{channelid};Middle}' +
-                        '\n    {send;{channelid};End}' +
-                        '\n  }' +
-                        '\n}' +
-                        '\nThis order is guaranteed always. Without a lock it isnt',
-                    exampleOut:
-                        '\nStart' +
-                        '\nMiddle' +
-                        '\nEnd' +
-                        '\nStart' +
-                        '\nMiddle' +
-                        '\nEnd' +
-                        '\nThis order is guaranteed always. Without a lock it isnt',
-                    returns: 'string',
-                    execute: async (ctx, [mode, key, code]) => await this.lock(ctx, mode.value, key.value, code)
-                }
-            ]
+                '\n`code` will be run once the lock is acquired'
         });
     }
 
-    public async lock(
-        context: BBTagContext,
-        mode: string,
-        key: string,
-        code: SubtagArgument
-    ): Promise<string> {
+    @Subtag.signature('string', [
+        Subtag.context(),
+        Subtag.argument('mode', 'string'),
+        Subtag.argument('key', 'string'),
+        Subtag.argument('code', 'deferred')
+    ], {
+        exampleCode:
+            '\n{//;in 2 command run in quick succession}' +
+            '\n{lock;write;key;' +
+            '\n  {void;' +
+            '\n    {send;{channelid};Start}' +
+            '\n    {send;{channelid};Middle}' +
+            '\n    {send;{channelid};End}' +
+            '\n  }' +
+            '\n}' +
+            '\nThis order is guaranteed always. Without a lock it isnt',
+        exampleOut:
+            '\nStart' +
+            '\nMiddle' +
+            '\nEnd' +
+            '\nStart' +
+            '\nMiddle' +
+            '\nEnd' +
+            '\nThis order is guaranteed always. Without a lock it isnt'
+    })
+    public async lock(context: BBTagContext, mode: string, key: string, body: () => Awaitable<string>): Promise<string> {
         if (context.scopes.local.inLock)
             throw new BBTagRuntimeError('Lock cannot be nested');
 
@@ -78,7 +72,7 @@ export class LockSubtag extends Subtag {
         const release = await lockAsync(lock, `${mode}Lock`);
         try {
             context.scopes.local.inLock = true;
-            return await code.wait();
+            return await body();
         } finally {
             context.scopes.local.inLock = false;
             release();

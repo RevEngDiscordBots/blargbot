@@ -10,8 +10,8 @@ export class JoinSubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.parameter('array', 'json[]', { isVariableName: 'maybe' }),
-        Subtag.parameter('text', 'string')
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' }),
+        Subtag.argument('text', 'string')
     ], {
         description: 'Joins the elements of `array` together with `text` as the separator.',
         exampleCode: '{join;["this", "is", "an", "array"];!}',

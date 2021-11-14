@@ -5,20 +5,17 @@ export class PrefixSubtag extends Subtag {
     public constructor() {
         super({
             name: 'prefix',
-            category: SubtagType.BOT,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Gets the current guild\'s prefix.',
-                    exampleCode: 'Your prefix is {prefix}',
-                    exampleOut: 'Your prefix is b!',
-                    returns: 'string',
-                    execute: ctx => this.getPrefix(ctx)
-                }
-            ]
+            category: SubtagType.BOT
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.context()
+    ], {
+        description: 'Gets the current guild\'s prefix.',
+        exampleCode: 'Your prefix is {prefix}',
+        exampleOut: 'Your prefix is b!'
+    })
     public async getPrefix(context: BBTagContext): Promise<string> {
         const prefix = await context.database.guilds.getSetting(context.guild.id, 'prefix');
         switch (typeof prefix) {

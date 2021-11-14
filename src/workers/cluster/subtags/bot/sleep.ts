@@ -1,7 +1,6 @@
 import { Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError } from '@cluster/bbtag/errors';
-import { parse, sleep, SubtagType } from '@cluster/utils';
-import moment from 'moment';
+import { sleep, SubtagType } from '@cluster/utils';
+import moment, { Duration } from 'moment';
 
 const maxSleep = moment.duration(5, 'minutes');
 
@@ -9,28 +8,21 @@ export class SleepTag extends Subtag {
     public constructor() {
         super({
             name: 'sleep',
-            category: SubtagType.BOT,
-            definition: [
-                {
-                    parameters: ['duration'],
-                    description: 'Pauses the current tag for the specified amount of time. Maximum is 5 minutes',
-                    exampleCode: '{sleep;10s}{send;{channelid};Hi!}',
-                    exampleOut: '(After 10s) Hi!',
-                    returns: 'nothing',
-                    execute: (_, [duration]) => this.sleep(duration.value)
-                }
-            ]
+            category: SubtagType.BOT
         });
     }
 
-    public async sleep(duration: string): Promise<void> {
-        let delay = parse.duration(duration);
-        if (delay === undefined)
-            throw new BBTagRuntimeError('Invalid duration');
+    @Subtag.signature('nothing', [
+        Subtag.argument('duration', 'duration')
+    ], {
+        description: 'Pauses the current tag for the specified amount of time. Maximum is 5 minutes',
+        exampleCode: '{sleep;10s}{send;{channelid};Hi!}',
+        exampleOut: '(After 10s) Hi!'
+    })
+    public async sleep(duration: Duration): Promise<void> {
+        if (duration.asMilliseconds() > maxSleep.asMilliseconds())
+            duration = maxSleep;
 
-        if (delay.asMilliseconds() > maxSleep.asMilliseconds())
-            delay = maxSleep;
-
-        await sleep(delay.asMilliseconds());
+        await sleep(duration.asMilliseconds());
     }
 }

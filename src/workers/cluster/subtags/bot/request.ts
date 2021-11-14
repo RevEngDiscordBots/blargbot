@@ -4,28 +4,6 @@ import { SubtagType } from '@cluster/utils';
 import { guard } from '@core/utils';
 import fetch, { RequestInit } from 'node-fetch';
 
-const domainRegex = /^https?:\/\/(.+?)(?:\/.?|$)/i;
-
-type HTTPMethod = 'GET' | 'PATCH' | 'POST' | 'DELETE' | 'PUT';
-
-interface Header {
-    [key: string]: string;
-}
-interface OptionsObject {
-    headers?: Header;
-    method: HTTPMethod;
-}
-
-interface ResponseObject {
-    body: Buffer;
-    text?: string;
-    status: number;
-    statusText: string;
-    contentType: string | null;
-    date: string | null;
-    url: string;
-}
-
 export class RequestSubtag extends Subtag {
     public constructor() {
         super({
@@ -35,55 +13,39 @@ export class RequestSubtag extends Subtag {
                 'The output is a JSON object with the following structure. It is recommended to use {jsonget} to navigate it.\n' +
                 '```json\n{\n  "body": {}, // the body of the request\n  "status": 200, // the HTTP status code\n  "statusText": "OK", // the human readable translation of the status code\n' +
                 '  "date": "Thu, 1 Jan 1970 00:00:00 GMT", // the date sent in the headers\n  "contentType": "application/json", // the content type of the response\n' +
-                '  "url": "https://fancy.url/here" // the url that was requested\n}\n```',
-            definition: [
-                {
-                    parameters: ['url'],
-                    description: 'Performs a GET request to `url`. ',
-                    exampleCode: '{jget;{request;https://blargbot.xyz/output/1111111111111111/raw};body}',
-                    exampleOut: 'Hello, world!',
-                    returns: 'json',
-                    execute: (ctx, [url]) => this.requestUrl(ctx, url.value, '', '')
-                },
-                {
-                    parameters: ['url', 'options', 'data?'],
-                    description: 'Performs a HTTP request to `url`, with provided `options` and `data`.' +
-                        '`options` is a JSON object with the following structure. It is recommended to use {jsonset} to create it.\n' +
-                        '```json\n{\n  "method": "GET|POST|PUT|PATCH|DELETE", // defaults to GET\n' +
-                        '  "headers": { "key": "value" }\n}\n```' +
-                        'If the method is GET and a JSON object is provided for `data`, it will be formatted as query strings.',
-                    exampleCode: '{jget;{request;https://example.com/update/user;{jset;;method;POST};{jset;;user;Stupid cat}};body}',
-                    exampleOut: 'Stupid cat updated!',
-                    returns: 'json',
-                    execute: (ctx, [url, options, data]) => this.requestUrl(ctx, url.value, options.value, data.value)
-                }
-            ]
+                '  "url": "https://fancy.url/here" // the url that was requested\n}\n```'
         });
     }
 
-    public async requestUrl(
-        context: BBTagContext,
-        url: string,
-        optionsStr: string,
-        dataStr: string
-    ): Promise<JObject> {
-        let domain;
-        if (domainRegex.test(url)) {
-            const domainRegexMatches = domainRegex.exec(url);
-            domain = domainRegexMatches !== null ? domainRegexMatches[1] : '';
-            const whitelisted = context.util.cluster.domains.isWhitelisted(domain);
-            if (!whitelisted) {
-                throw new BBTagRuntimeError('Domain is not whitelisted: ' + domain);
-            }
-        } else {
+    @Subtag.signature('json', [
+        Subtag.context(),
+        Subtag.argument('url', 'string'),
+        Subtag.argument('options', 'string', { ifOmitted: undefined }),
+        Subtag.argument('data', 'string', { ifOmitted: undefined })
+    ], {
+
+        description: 'Performs a HTTP request to `url`, with provided `options` and `data`.' +
+            '`options` is a JSON object with the following structure. It is recommended to use {jsonset} to create it.\n' +
+            '```json\n{\n  "method": "GET|POST|PUT|PATCH|DELETE", // defaults to GET\n' +
+            '  "headers": { "key": "value" }\n}\n```' +
+            'If the method is GET and a JSON object is provided for `data`, it will be formatted as query strings.',
+        exampleCode: '{jget;{request;https://example.com/update/user;{jset;;method;POST};{jset;;user;Stupid cat}};body}',
+        exampleOut: 'Stupid cat updated!'
+    })
+    public async requestUrl(context: BBTagContext, url: string, optionsStr?: string, dataStr?: string): Promise<JObject> {
+        if (!domainRegex.test(url))
             throw new BBTagRuntimeError('A domain could not be extracted from url: ' + url);
-        }
+
+        const domainRegexMatches = domainRegex.exec(url);
+        const domain = domainRegexMatches !== null ? domainRegexMatches[1] : '';
+        if (!context.util.cluster.domains.isWhitelisted(domain))
+            throw new BBTagRuntimeError('Domain is not whitelisted: ' + domain);
 
         const options: OptionsObject = {
             method: 'GET'
         };
-
-        if (optionsStr !== '') {
+        // TODO use the mapping framework?
+        if (optionsStr !== undefined) {
             try {
                 let parsedJson = JSON.parse(optionsStr);
                 if (typeof parsedJson !== 'object' || parsedJson === null || Array.isArray(parsedJson))
@@ -115,7 +77,7 @@ export class RequestSubtag extends Subtag {
             }
         }
         let dataObject: JToken | undefined;
-        if (dataStr !== '') {
+        if (dataStr !== undefined) {
             try {
                 dataObject = JSON.parse(dataStr);
                 if (guard.hasValue(options.headers))
@@ -180,4 +142,26 @@ export class RequestSubtag extends Subtag {
             throw e;
         }
     }
+}
+
+const domainRegex = /^https?:\/\/(.+?)(?:\/.?|$)/i;
+
+type HTTPMethod = 'GET' | 'PATCH' | 'POST' | 'DELETE' | 'PUT';
+
+interface Header {
+    [key: string]: string;
+}
+interface OptionsObject {
+    headers?: Header;
+    method: HTTPMethod;
+}
+
+interface ResponseObject {
+    body: Buffer;
+    text?: string;
+    status: number;
+    statusText: string;
+    contentType: string | null;
+    date: string | null;
+    url: string;
 }

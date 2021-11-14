@@ -1,7 +1,7 @@
 export { createDebugOutput } from './debugOutput';
 export * as json from './json';
 export * as operators from './operators';
-export { parse } from './parse';
+export { parseBBTagAST as parse } from './parse';
 export { stringify } from './stringify';
 export { stringifyAnalysis } from './stringifyAnalysis';
 export { stringifyLocation } from './stringifyLocation';

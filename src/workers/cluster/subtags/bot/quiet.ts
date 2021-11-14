@@ -1,25 +1,23 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { parse, SubtagType } from '@cluster/utils';
+import { SubtagType } from '@cluster/utils';
 
 export class QuietSubtag extends Subtag {
     public constructor() {
         super({
             name: 'quiet',
-            category: SubtagType.BOT,
-            definition: [
-                {
-                    parameters: ['isQuiet?:true'],
-                    description: 'Tells any subtags that rely on a `quiet` field to be/not be quiet based on `isQuiet. `isQuiet` must be a boolean',
-                    exampleCode: '{quiet} {usermention;cat}',
-                    exampleOut: 'cat',
-                    returns: 'nothing',
-                    execute: (ctx, [quiet]) => this.setQuiet(ctx, quiet.value)
-                }
-            ]
+            category: SubtagType.BOT
         });
     }
 
-    public setQuiet(context: BBTagContext, valueStr: string): void {
-        context.scopes.local.quiet = parse.boolean(valueStr);
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('isQuiet', 'boolean', { ifOmitted: true, ifInvalid: undefined })
+    ], {
+        description: 'Tells any subtags that rely on a `quiet` field to be/not be quiet based on `isQuiet. `isQuiet` must be a boolean',
+        exampleCode: '{quiet} {usermention;cat}',
+        exampleOut: 'cat'
+    })
+    public setQuiet(context: BBTagContext, quiet: boolean | undefined): void {
+        context.scopes.local.quiet = quiet;
     }
 }

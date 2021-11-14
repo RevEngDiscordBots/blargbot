@@ -5,21 +5,19 @@ export class FallBackSubtag extends Subtag {
     public constructor() {
         super({
             name: 'fallback',
-            category: SubtagType.BOT,
-            definition: [
-                {
-                    parameters: ['message?'],
-                    description: 'Should any tag fail to parse, it will be replaced with `message` instead of an error.',
-                    exampleCode: '{fallback;This tag failed} {randint}',
-                    exampleOut: 'This tag failed',
-                    returns: 'nothing',
-                    execute: (ctx, [message]) => this.setFallback(ctx, message.value)
-                }
-            ]
+            category: SubtagType.BOT
         });
     }
 
-    public setFallback(context: BBTagContext, value: string): void {
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('value', 'string', { ifOmitted: undefined })
+    ], {
+        description: 'Should any tag fail to parse, it will be replaced with `message` instead of an error.',
+        exampleCode: '{fallback;This tag failed} {randint}',
+        exampleOut: 'This tag failed'
+    })
+    public setFallback(context: BBTagContext, value?: string): void {
         context.scopes.local.fallback = value;
     }
 }

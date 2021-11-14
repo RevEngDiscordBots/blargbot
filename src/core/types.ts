@@ -367,6 +367,7 @@ export interface TagV4StoredEventOptions extends TagStoredEventOptionsBase<4> {
     readonly source: string;
     readonly context: SerializedBBTagContext;
     readonly content: string;
+    readonly user: string;
 }
 
 export type TagStoredEventOptions =

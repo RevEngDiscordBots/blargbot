@@ -6,20 +6,17 @@ export class FlagsArraySubtag extends Subtag {
         super({
             name: 'flagsarray',
             category: SubtagType.BOT,
-            desc: 'Returns an array of all flags provided.',
-            definition: [
-                {
-                    parameters: [],
-                    exampleCode: '{flagsarray}',
-                    exampleIn: 'Hello -dc world',
-                    exampleOut: '["_","d","c"]',
-                    returns: 'string[]',
-                    execute: (ctx) => this.flagKeys(ctx)
-                }
-            ]
+            desc: 'Returns an array of all flags provided.'
         });
     }
 
+    @Subtag.signature('string[]', [
+        Subtag.context()
+    ], {
+        exampleCode: '{flagsarray}',
+        exampleIn: 'Hello -dc world',
+        exampleOut: '["_","d","c"]'
+    })
     public flagKeys(context: BBTagContext): string[] {
         return Object.keys(context.flaggedInput);
     }
