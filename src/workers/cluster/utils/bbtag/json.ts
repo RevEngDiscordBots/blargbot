@@ -9,11 +9,11 @@ export interface ReturnObject {
 }
 
 export async function parse(context: BBTagContext, input: string): Promise<ReturnObject> {
-    let obj: BBTagArray | JToken | undefined;
+    let obj: JToken | undefined;
     let variable: string | undefined;
     const arr = await getArray(context, input);
     if (arr !== undefined) {
-        obj = arr.v;
+        obj = Array.isArray(arr) ? arr : arr.v;
     } else {
         try {
             obj = JSON.parse(input);

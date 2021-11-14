@@ -115,7 +115,20 @@ export interface SourceMarker {
     readonly line: number;
     readonly column: number;
 }
-export type BBTagArray = { n?: string; v: JArray; };
+export interface BBTagArray { // TODO BBTagRef
+    v: JArray;
+    n: string;
+}
+
+export interface BBTagRef<T> {
+    readonly name: string;
+    value: T;
+}
+
+export type BBTagMaybeRef<T> = {
+    readonly name?: string;
+    value: T;
+};
 
 export interface SourceToken {
     type: SourceTokenType;

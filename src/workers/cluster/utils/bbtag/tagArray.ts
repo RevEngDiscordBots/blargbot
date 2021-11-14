@@ -11,13 +11,12 @@ export function serialize(array: JArray | BBTagArray, varName?: string): string 
 
     if (varName === undefined || varName.length === 0)
         return JSON.stringify(array);
-    return JSON.stringify({
-        v: 'v' in array ? array.v : undefined,
-        n: varName
-    });
+    return JSON.stringify({ v: array.v, n: varName });
 }
 
-export function deserialize(value: string): BBTagArray | undefined {
+export function deserialize(value: string, preserveRef?: boolean): BBTagArray | JArray | undefined
+export function deserialize(value: string, preserveRef: false): JArray | undefined
+export function deserialize(value: string, preserveRef = true): BBTagArray | JArray | undefined {
     let result = mapBBArray(value);
     if (!result.valid) {
         value = value.replace(
@@ -30,44 +29,57 @@ export function deserialize(value: string): BBTagArray | undefined {
     if (!result.valid)
         return undefined;
     if (Array.isArray(result.value))
-        return { v: result.value };
-    return result.value;
+        return result.value;
+    if (!preserveRef || result.value.n === undefined)
+        return result.value.v;
+    return { n: result.value.n, v: result.value.v };
+}
+
+export async function getArray(context: BBTagContext, arrName: string, preserveRef?: boolean): Promise<BBTagArray | JArray | undefined>
+export async function getArray(context: BBTagContext, arrName: string, preserveRef: false): Promise<JArray | undefined>
+export async function getArray(context: BBTagContext, arrName: string, preserveRef = true): Promise<BBTagArray | JArray | undefined> {
+    const obj = deserialize(arrName, preserveRef);
+    if (obj !== undefined)
+        return obj;
+    try {
+        const arr = await context.variables.get(arrName);
+        if (Array.isArray(arr))
+            return preserveRef ? { v: arr, n: arrName } : arr;
+    } catch {
+        // NOOP
+    }
+    return undefined;
+}
+
+export function flattenArray(array: JArray): JArray {
+    return [...flattenArrayIter(array)];
 }
 
 const mapBBArray = mapping.json(
     mapping.choice(
         mapping.array(mapping.jToken),
-        mapping.object<BBTagArray>({
+        mapping.object({
             n: mapping.string.optional,
             v: mapping.array(mapping.jToken)
         })
     )
 );
 
-export function flattenArray(array: JArray): JArray {
-    const result = [];
+function* flattenArrayIter(array: JArray): Iterable<JToken> {
     for (const arg of array) {
-        const arr = typeof arg === 'string' ? deserialize(arg) : undefined;
-        if (arr !== undefined)
-            result.push(...arr.v);
-        else if (Array.isArray(arg))
-            result.push(...arg);
-        else
-            result.push(arg);
+        switch (typeof arg) {
+            case 'string': {
+                const arr = deserialize(arg) ?? [arg];
+                yield* Array.isArray(arr) ? arr : arr.v;
+                break;
+            }
+            case 'object': if (Array.isArray(arg)) {
+                yield* arg;
+                break;
+            }
+            //fallthrough
+            default:
+                yield arg;
+        }
     }
-    return result;
-}
-
-export async function getArray(context: BBTagContext, arrName: string): Promise<BBTagArray | undefined> {
-    const obj = deserialize(arrName);
-    if (obj !== undefined)
-        return obj;
-    try {
-        const arr = await context.variables.get(arrName);
-        if (arr !== undefined && Array.isArray(arr))
-            return { v: arr, n: arrName };
-    } catch {
-        // NOOP
-    }
-    return undefined;
 }

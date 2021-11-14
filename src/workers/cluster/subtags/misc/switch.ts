@@ -23,7 +23,7 @@ export class SwitchSubtag extends Subtag {
         defaultCase?: SubtagArgument
     ): Promise<string> {
         for (const [caseValue, then] of cases) {
-            const { v: options = [caseValue] } = bbtagUtil.tagArray.deserialize(caseValue) ?? { v: undefined };
+            const options = bbtagUtil.tagArray.deserialize(caseValue, false) ?? [caseValue];
             for (const option of options)
                 if (parse.string(option) === value)
                     return await then.execute();

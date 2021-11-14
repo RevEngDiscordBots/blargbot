@@ -1,4 +1,4 @@
-export function shuffle(array: unknown[]): void {
+export function shuffle<T extends unknown[]>(array: T): T {
     let i = 0;
     let j = 0;
     let temp = null;
@@ -9,4 +9,6 @@ export function shuffle(array: unknown[]): void {
         array[i] = array[j];
         array[j] = temp;
     }
+
+    return array;
 }

@@ -19,6 +19,8 @@
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
         "moduleResolution": "node",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
         "types": [],
         "lib": [
             "ES2021"

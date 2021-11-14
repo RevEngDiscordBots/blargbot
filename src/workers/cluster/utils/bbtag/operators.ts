@@ -27,34 +27,30 @@ export const compare = {
     '<=': (a: string, b: string): boolean => compareFn(a, b) <= 0,
     '<': (a: string, b: string): boolean => compareFn(a, b) < 0,
     startswith(a: string, b: string): boolean {
-        const arr = getArray(a);
-        if (arr !== false) {
+        const arr = deserialize(a, false);
+        if (arr !== undefined)
             return arr[0] === b;
-        }
         return a.startsWith(b);
 
     },
     endswith(a: string, b: string): boolean {
-        const arr = getArray(a);
-        if (arr !== false) {
+        const arr = deserialize(a, false);
+        if (arr !== undefined)
             return arr.slice(-1)[0] === b;
-        }
         return a.endsWith(b);
 
     },
     includes(a: string, b: string): boolean {
-        const arr = getArray(a);
-        if (arr !== false) {
+        const arr = deserialize(a, false);
+        if (arr !== undefined)
             return arr.find((v) => v === b) !== null;
-        }
         return a.includes(b);
 
     },
     contains(a: string, b: string): boolean {
-        const arr = getArray(a);
-        if (arr !== false) {
+        const arr = deserialize(a, false);
+        if (arr !== undefined)
             return arr.find((v) => v === b) !== null;
-        }
         return a.includes(b);
 
     }
@@ -79,12 +75,3 @@ export const logic = {
 
 export const all: typeof compare & typeof numeric & typeof logic = Object.assign({}, compare, numeric, logic);
 //TODO bitwise
-
-function getArray(text: string): JArray | false {
-    const arr = deserialize(text);
-    if (arr !== undefined) {
-        return arr.v;
-    }
-    return false;
-
-}

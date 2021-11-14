@@ -21,9 +21,9 @@ export class LengthSubtag extends Subtag {
     }
 
     public getLength(value: string): number {
-        const deserializedArray = bbtagUtil.tagArray.deserialize(value);
-        if (deserializedArray !== undefined)
-            return deserializedArray.v.length;
+        const arr = bbtagUtil.tagArray.deserialize(value, false);
+        if (arr !== undefined)
+            return arr.length;
         return value.length;
     }
 }

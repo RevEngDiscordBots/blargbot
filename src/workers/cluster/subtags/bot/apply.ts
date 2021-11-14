@@ -1,34 +1,27 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { BBTagRuntimeError, UnknownSubtagError } from '@cluster/bbtag/errors';
-import { SubtagCall } from '@cluster/types';
-import { bbtagUtil, guard, SubtagType } from '@cluster/utils';
+import { Statement, SubtagCall } from '@cluster/types';
+import { bbtagUtil, SubtagType } from '@cluster/utils';
 
 export class ApplySubtag extends Subtag {
     public constructor() {
         super({
             name: 'apply',
-            category: SubtagType.ARRAY,
-            definition: [
-                {
-                    parameters: ['subtag', 'args*'],
-                    description:
-                        'Executes `subtag`, using the `args` as parameters. ' +
-                        'If `args` is an array, it will get deconstructed to it\'s individual elements.',
-                    exampleCode: '{apply;randint;[1,4]}',
-                    exampleOut: '3',
-                    returns: 'string',
-                    execute: (ctx, [subtagName, ...args], subtag) => this.defaultApply(ctx, subtagName.value, args.map(a => a.value), subtag)
-                }
-            ]
+            category: SubtagType.ARRAY
         });
     }
 
-    public async defaultApply(
-        context: BBTagContext,
-        subtagName: string,
-        args: string[],
-        subtag: SubtagCall
-    ): Promise<string> {
+    @Subtag.signature('string', [
+        Subtag.context,
+        Subtag.subtagCode,
+        Subtag.parameter('subtagName', 'string'),
+        Subtag.parameter('subtagArgs', 'string', { repeat: [0, Infinity] })
+    ], {
+        description: 'Executes `subtag`, using the `args` as parameters. If `args` is an array, it will get deconstructed to it\'s individual elements.',
+        exampleCode: '{apply;randint;[1,4]}',
+        exampleOut: '3'
+    })
+    public async callSubtagWithArgs(context: BBTagContext, subtag: SubtagCall, subtagName: string, args: string[]): Promise<string> {
         try {
             context.getSubtag(subtagName.toLowerCase());
         } catch (error: unknown) {
@@ -37,21 +30,9 @@ export class ApplySubtag extends Subtag {
             throw new BBTagRuntimeError('No subtag found');
         }
 
-        const flattenedArgs: Array<readonly string[]> = [];
-
-        for (const arg of args) {
-            const arr = bbtagUtil.tagArray.deserialize(arg);
-            if (arr !== undefined) {
-                flattenedArgs.push(
-                    ...arr.v.map((i) =>
-                        typeof i === 'object' || !guard.hasValue(i)
-                            ? [JSON.stringify(i)]
-                            : [i.toString()]
-                    )
-                );
-            } else
-                flattenedArgs.push([arg]);
-        }
+        const flattenedArgs = args.flatMap(arg => bbtagUtil.tagArray.deserialize(arg, false) ?? [arg])
+            .map(item => typeof item === 'object' ? JSON.stringify(item) : item.toString())
+            .map<Statement>(item => [item]);
 
         return await context.eval([{
             name: [subtagName.toLowerCase()],

@@ -1,31 +1,23 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { NotAnArrayError } from '@cluster/bbtag/errors';
-import { bbtagUtil, SubtagType } from '@cluster/utils';
+import { Subtag } from '@cluster/bbtag';
+import { SubtagType } from '@cluster/utils';
 
 export class JoinSubtag extends Subtag {
     public constructor() {
         super({
             name: 'join',
-            category: SubtagType.ARRAY,
-            definition: [
-                {
-                    parameters: ['array', 'text'],
-                    description: 'Joins the elements of `array` together with `text` as the separator.',
-                    exampleCode: '{join;["this", "is", "an", "array"];!}',
-                    exampleOut: 'this!is!an!array',
-                    returns: 'string',
-                    execute: (context, [array, join]) => this.join(context, array.value, join.value)
-                }
-            ]
+            category: SubtagType.ARRAY
         });
     }
 
-    public async join(context: BBTagContext, arrayStr: string, separator: string): Promise<string> {
-        const { v: array } = await bbtagUtil.tagArray.getArray(context, arrayStr) ?? {};
-
-        if (array === undefined)
-            throw new NotAnArrayError(arrayStr);
-
+    @Subtag.signature('string', [
+        Subtag.parameter('array', 'json[]', { isVariableName: 'maybe' }),
+        Subtag.parameter('text', 'string')
+    ], {
+        description: 'Joins the elements of `array` together with `text` as the separator.',
+        exampleCode: '{join;["this", "is", "an", "array"];!}',
+        exampleOut: 'this!is!an!array'
+    })
+    public join(array: JArray, separator: string): string {
         return array.join(separator);
     }
 }

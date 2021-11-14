@@ -44,6 +44,8 @@ declare global {
         : T extends `${infer _1}${infer _rest}` ? [_1, ...SplitString<_rest>]
         : string[];
 
+    type ConstrainedMethodDecorator<Target = object, Args extends readonly unknown[] = never, Return = unknown> = <T extends (...args: Args) => Return>(target: Target, propertyKey: symbol | string, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T>;
+
     interface ObjectConstructor {
         keys<TKey extends string>(value: { [P in TKey]?: unknown }): TKey[];
         keys<TString extends string>(value: TString): Array<`${number}`>;

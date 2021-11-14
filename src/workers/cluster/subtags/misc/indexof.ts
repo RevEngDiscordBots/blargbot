@@ -25,7 +25,7 @@ export class IndexOfSubtag extends Subtag {
         if (from === undefined)
             throw new NotANumberError(startStr);
 
-        const { v: input } = bbtagUtil.tagArray.deserialize(text) ?? { v: text };
+        const input = bbtagUtil.tagArray.deserialize(text, false) ?? text;
         return input.indexOf(query, from);
     }
 }

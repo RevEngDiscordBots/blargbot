@@ -1,36 +1,37 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { NotAnArrayError } from '@cluster/bbtag/errors';
-import { bbtagUtil, SubtagType } from '@cluster/utils';
+import { Subtag } from '@cluster/bbtag';
+import { BBTagRef } from '@cluster/types';
+import { SubtagType } from '@cluster/utils';
 
 export class PushSubtag extends Subtag {
     public constructor() {
         super({
             name: 'push',
-            category: SubtagType.ARRAY,
-            definition: [
-                {
-                    parameters: ['array', 'values+'],
-                    description: 'Pushes `values` onto the end of `array`. If provided a variable, this will update the original variable. Otherwise, it will simply output the new array.',
-                    exampleCode: '{push;["this", "is", "an"];array}',
-                    exampleOut: '["this","is","an","array"]',
-                    returns: 'json[]|nothing',
-                    execute: (context, [array, ...values]) => this.push(context, array.value, values.map(v => v.value))
-                }
-            ]
+            category: SubtagType.ARRAY
         });
     }
 
-    public async push(context: BBTagContext, arrayStr: string, values: string[]): Promise<JArray | undefined> {
-        const { n: varName, v: array } = await bbtagUtil.tagArray.getArray(context, arrayStr) ?? {};
+    @Subtag.signature('nothing', [
+        Subtag.parameter('array', 'json[]*', { isVariableName: 'maybe' }),
+        Subtag.parameter('values', 'string', { repeat: [0, Infinity] })
+    ], {
+        description: 'Pushes `values` onto the end of `array`. If provided a variable, this will update the original variable. Otherwise, it will simply output the new array.',
+        exampleCode: '{push;{get;~myArray};value1;value2}',
+        exampleOut: ''
+    })
+    public pushVariable(array: BBTagRef<JArray>, values: string[]): void {
+        array.value.push(...values);
+    }
 
-        if (array === undefined)
-            throw new NotAnArrayError(arrayStr);
-
+    @Subtag.signature('json[]', [
+        Subtag.parameter('array', 'json[]'),
+        Subtag.parameter('values', 'string', { repeat: [0, Infinity] })
+    ], {
+        description: 'Pushes `values` onto the end of `array`. If provided a variable, this will update the original variable. Otherwise, it will simply output the new array.',
+        exampleCode: '{push;["this", "is", "an"];array;!}',
+        exampleOut: '["this","is","an","array","!"]'
+    })
+    public pushLiteral(array: JArray, values: string[]): JArray {
         array.push(...values);
-        if (varName === undefined)
-            return array;
-
-        await context.variables.set(varName, array);
-        return undefined;
+        return array;
     }
 }

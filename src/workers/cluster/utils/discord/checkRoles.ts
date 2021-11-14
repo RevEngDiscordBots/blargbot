@@ -15,7 +15,7 @@ export async function checkRoles(
     quiet: boolean
 ): Promise<CheckRolesResult> {
     const roleExpr = /(\d{17,23})/;
-    const deserialized = bbtagUtil.tagArray.deserialize(roleStr);
+    const deserialized = bbtagUtil.tagArray.deserialize(roleStr, false);
     const result: CheckRolesResult = {
         member: context.member,
         roles: [],
@@ -24,7 +24,7 @@ export async function checkRoles(
     if (userStr !== '')
         result.member = await context.queryMember(userStr, { noLookup: quiet });
 
-    const roles = deserialized?.v.map(v => v?.toString() ?? 'null') ?? [roleStr];
+    const roles = deserialized?.map(v => v?.toString() ?? 'null') ?? [roleStr];
     for (const entry of roles) {
         const match = roleExpr.exec(entry);
         const role = context.guild.roles.cache.get(match !== null ? match[1] : ''); //TODO context.getRole

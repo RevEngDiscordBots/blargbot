@@ -50,12 +50,8 @@ export class SetSubtag extends Subtag {
         variableName: string,
         value: string
     ): Promise<void> {
-        const deserializedArray = bbtagUtil.tagArray.deserialize(value);
-        if (deserializedArray !== undefined) {
-            await context.variables.set(variableName, deserializedArray.v);
-        } else {
-            await context.variables.set(variableName, value);
-        }
+        const arr = bbtagUtil.tagArray.deserialize(value, false);
+        await context.variables.set(variableName, arr ?? value);
     }
 
     public async setArray(
