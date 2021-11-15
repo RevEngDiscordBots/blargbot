@@ -118,4 +118,20 @@ declare global {
     }
 
     function setTimeout<TArgs extends unknown[]>(callback: (...args: TArgs) => void, ms: number, ...args: TArgs): NodeJS.Timeout;
+
+    type ExcludeItem<Arr extends readonly unknown[], Item> =
+        number extends Arr['length']
+        ? Arr extends unknown[] ? _ExcludeItemArrayHelper<Arr, Item> : _ExcludeItemReadonlyArrayHelper<Arr, Item>
+        : Arr extends unknown[] ? _ExcludeItemTupleHelper<Arr, Item> : _ExcludeItemReadonlyTupleHelper<Arr, Item>
+
+    type _ExcludeItemReadonlyArrayHelper<Arr extends readonly unknown[], Item> = ReadonlyArray<Exclude<Arr[number], Item>>;
+    type _ExcludeItemArrayHelper<Arr extends unknown[], Item> = Array<Exclude<Arr[number], Item>>;
+    type _ExcludeItemReadonlyTupleHelper<Remaining extends readonly unknown[], Item, Result extends readonly unknown[] = readonly []> =
+        Remaining extends readonly [infer I, ...infer Rest]
+        ? _ExcludeItemReadonlyTupleHelper<Rest, Item, I extends Item ? Result : readonly [...Result, I]>
+        : Result;
+    type _ExcludeItemTupleHelper<Remaining extends unknown[], Item, Result extends unknown[] = []> =
+        Remaining extends [infer I, ...infer Rest]
+        ? _ExcludeItemTupleHelper<Rest, Item, I extends Item ? Result : [...Result, I]>
+        : Result
 }

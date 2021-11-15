@@ -1,46 +1,37 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { ChannelNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { Guild, GuildChannels } from 'discord.js';
 
 export class ChannelsSubtag extends Subtag {
     public constructor() {
         super({
             name: 'channels',
-            category: SubtagType.CHANNEL,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns an array of channel IDs in the current guild',
-                    exampleCode: 'This guild has {length;{channels}} channels.',
-                    exampleOut: 'This guild has {length;{channels}} channels.',
-                    returns: 'id[]',
-                    execute: (ctx) => this.getChannels(ctx)
-                },
-                {
-                    parameters: ['category', 'quiet?'],
-                    description: 'Returns an array of channel IDs in within the given `category`. If `category` is not a category, returns an empty array. If `category` cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',
-                    exampleCode: 'Category cat-channels has {length;{channels;cat-channels}} channels.',
-                    exampleOut: 'Category cat-channels has 6 channels.',
-                    returns: 'id[]',
-                    execute: (ctx, [category, quiet]) => this.getChannelsInCategory(ctx, category.value, quiet.value !== '')
-                }
-            ]
+            category: SubtagType.CHANNEL
         });
     }
 
-    public getChannels(context: BBTagContext): string[] {
-        return context.guild.channels.cache.map(c => c.id);
+    @Subtag.signature('snowflake[]', [
+        Subtag.context(ctx => ctx.guild)
+    ], {
+        description: 'Returns an array of channel IDs in the current guild',
+        exampleCode: 'This guild has {length;{channels}} channels.',
+        exampleOut: 'This guild has {length;{channels}} channels.'
+    })
+    public getChannels(guild: Guild): string[] {
+        return guild.channels.cache.map(c => c.id);
     }
 
-    public async getChannelsInCategory(context: BBTagContext, channelStr: string, quiet: boolean): Promise<string[]> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const channel = await context.queryChannel(channelStr, { noLookup: quiet });
-        if (channel === undefined) {
-            throw new ChannelNotFoundError(channelStr)
-                .withDisplay(quiet ? '' : undefined);
-        }
-        if (channel.type !== 'GUILD_CATEGORY')
+    @Subtag.signature('snowflake[]', [
+        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns an array of channel IDs in within the given `category`. If `category` is not a category, returns an empty array. If `category` cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',
+        exampleCode: 'Category cat-channels has {length;{channels;cat-channels}} channels.',
+        exampleOut: 'Category cat-channels has 6 channels.'
+    })
+    public getChannelsInCategory(category: GuildChannels): string[] {
+        if (category.type !== 'GUILD_CATEGORY')
             return [];
-        return channel.children.map(c => c.id);
+        return category.children.map(c => c.id);
     }
 }

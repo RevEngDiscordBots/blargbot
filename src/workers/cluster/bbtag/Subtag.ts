@@ -1,5 +1,6 @@
 import { BBTagMaybeRef, BBTagRef, CompositeSubtagHandler, Statement, SubtagCall, SubtagHandlerCallSignature, SubtagOptions, SubtagResult } from '@cluster/types';
 import { SubtagType } from '@cluster/utils';
+import { Logger } from '@core/Logger';
 import { metrics } from '@core/Metrics';
 import { Timer } from '@core/Timer';
 import { Snowflake } from 'catflake';
@@ -112,6 +113,10 @@ export abstract class Subtag implements SubtagOptions {
         value;
         throw new Error('NotImplemented');
     }
+
+    public static logger(): SubtagParameterDescriptor<Logger> {
+        throw new Error('NotImplemented');
+    }
 }
 
 type Iterated<T> = Iterable<T> | AsyncIterable<T>;
@@ -144,6 +149,7 @@ type SubtagArgumentTypeMapCore = {
     'number': number;
     'float': number;
     'color': number;
+    'bigint': bigint;
     'duration': Duration;
     'boolean': boolean;
     'json': JToken;
@@ -152,6 +158,7 @@ type SubtagArgumentTypeMapCore = {
     'channel': GuildChannels;
     'role': Role;
     'emoji': Emoji;
+    'snowflake': string;
     'json[]': JArray;
 }
 type SubtagArgumentTypeMap =
@@ -208,9 +215,9 @@ type TypeSpecificSubtagParameterOptions<Type> =
 
 type SubtagParameterOptions<Type> = TypeSpecificSubtagParameterOptions<Type> & {
     readonly isVariableName?: boolean | 'maybe';
-    readonly guard?: (value: Type) => boolean;
+    readonly guard?: (value: Type) => boolean; // TODO Make this able to narrow types
     readonly maxSourceLength?: number;
-    readonly ifQuiet?: string;
+    readonly quietErrorDisplay?: string;
     readonly customError?: string | ((value: string) => BBTagRuntimeError | string);
 }
 
@@ -242,7 +249,18 @@ interface SubtagParameterDescriptor<T = unknown> {
     readonly minArgs: number;
     readonly maxArgs: number;
     readonly argGroupSize: number;
+    readonly emitted: boolean;
     getValue(context: BBTagContext, subtag: SubtagCall, index: number): Awaitable<T>;
+
+    /**
+     * Marks this parameter as not needing to be sent to the implementation.
+     * Generally this is just used for "swich" type arguments, used for looking up other values like roles/users/channels
+     */
+    noEmit(): this & NoEmitSubtagParameterDescriptor;
+}
+
+interface NoEmitSubtagParameterDescriptor {
+    readonly emitted: false;
 }
 
 interface NamedSubtagParameterDescriptor<Name extends string, Type> extends SubtagParameterDescriptor<Type> {
@@ -267,7 +285,11 @@ type AnySubtagParameterGroupOptions<T> =
     | MappedRepeatedSubtagParameterGroupOptions<T, unknown>
 
 type ParameterType<T> = T extends SubtagParameterDescriptor<infer R> ? R : never;
-type ParameterTypes<Parameters> = { [P in keyof Parameters]: ParameterType<Parameters[P]>; }
+type ParameterTypes<Parameters extends readonly unknown[]> = ParameterTypesHelper<ExcludeItem<Parameters, NoEmitSubtagParameterDescriptor>, readonly []>;
+type ParameterTypesHelper<Remaining extends readonly unknown[], Result extends readonly unknown[]> =
+    Remaining extends readonly [infer I, ...infer Rest]
+    ? ParameterTypesHelper<Rest, readonly [...Result, ParameterType<I>]>
+    : Result;
 
 type SubtagSignatureDecorator<Return extends SubtagReturnType, Parameters extends readonly SubtagParameterDescriptor[]>
     = ConstrainedMethodDecorator<Subtag, ParameterTypes<Parameters>, Awaitable<SubtagReturnTypeMap[Return]>>

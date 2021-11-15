@@ -1,46 +1,33 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, ChannelNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
+import { BBTagRuntimeError } from '@cluster/bbtag/errors';
 import { SubtagType } from '@cluster/utils';
 import { guard } from '@core/utils';
+import { GuildChannels } from 'discord.js';
 
 export class LastMessageIdSubtag extends Subtag {
     public constructor() {
         super({
             name: 'lastmessageid',
             category: SubtagType.CHANNEL,
-            desc: 'Returns nothing if the channel doesn\'t have any messages.',
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns the messageID of the last message in the current channel.',
-                    exampleCode: '{lastmessageid}',
-                    exampleOut: '1111111111111111',
-                    returns: 'id',
-                    execute: (ctx) => this.getLastMessageID(ctx, ctx.channel.id)
-                },
-                {
-                    parameters: ['channel'],
-                    description: 'Returns the messageID of the last message in `channel`.',
-                    exampleCode: '{lastmessageid;1111111111111111}',
-                    exampleOut: '2222222222222222',
-                    returns: 'id',
-                    execute: (ctx, [channel]) => this.getLastMessageID(ctx, channel.value)
-                }
-            ]
+            desc: 'Returns nothing if the channel doesn\'t have any messages.'
         });
     }
 
-    public async getLastMessageID(
-        context: BBTagContext,
-        channelStr: string
-    ): Promise<string> {
-        const channel = await context.queryChannel(channelStr, {
-            noLookup: context.scopes.local.quiet,
-            noErrors: context.scopes.local.noLookupErrors
-        });
-
-        if (channel === undefined)
-            throw new ChannelNotFoundError(channelStr);
+    @Subtag.signature('snowflake', [
+        Subtag.context(ctx => ctx.channel)
+    ], {
+        description: 'Returns the messageID of the last message in the current channel.',
+        exampleCode: '{lastmessageid}',
+        exampleOut: '1111111111111111'
+    })
+    @Subtag.signature('snowflake', [
+        Subtag.argument('channel', 'channel')
+    ], {
+        description: 'Returns the messageID of the last message in `channel`.',
+        exampleCode: '{lastmessageid;1111111111111111}',
+        exampleOut: '2222222222222222'
+    })
+    public getLastMessageID(channel: GuildChannels): string {
         if (!guard.isTextableChannel(channel))
             throw new BBTagRuntimeError('Channel must be a textable channel');
 

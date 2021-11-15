@@ -20,8 +20,8 @@ export class ChannelCategorySubtag extends Subtag {
         exampleOut: '111111111111111'
     })
     @Subtag.signature('snowflake', [
-        Subtag.argument('channel', 'channel', { ifQuiet: '' }),
-        Subtag.quietArgument()
+        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.quietArgument().noEmit()
     ], {
         description: 'Returns the category ID of the provided `channel`. If the provided `channel` is a category this returns nothing. If it cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',
         exampleCode: '{channelcategory;cool channel}\n{channelcategory;cool category}',

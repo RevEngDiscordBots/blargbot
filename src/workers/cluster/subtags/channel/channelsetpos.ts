@@ -1,41 +1,33 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { BBTagRuntimeError } from '@cluster/bbtag/errors';
-import { parse, SubtagType } from '@cluster/utils';
+import { SubtagType } from '@cluster/utils';
+import { GuildChannels } from 'discord.js';
 
 export class ChannelSetPosSubtag extends Subtag {
     public constructor() {
         super({
             name: 'channelsetpos',
             aliases: ['channelsetposition'],
-            category: SubtagType.CHANNEL,
-            definition: [
-                {
-                    parameters: ['channel', 'position'],
-                    description: 'Moves a channel to the provided position.',
-                    exampleCode: '{channelsetpos;11111111111111111;5}',
-                    exampleOut: '',
-                    returns: 'nothing',
-                    execute: (ctx, [channel, position]) => this.setChannelPosition(ctx, channel.value, position.value)
-                }
-            ]
+            category: SubtagType.CHANNEL
         });
     }
 
-    public async setChannelPosition(context: BBTagContext, channelStr: string, posStr: string): Promise<void> {
-        const channel = await context.queryChannel(channelStr);
-
-        if (channel === undefined)
-            throw new BBTagRuntimeError('Channel does not exist');//TODO No channel found error
-
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
+        Subtag.argument('position', 'integer', { ifInvalid: NaN }) //TODO not a number error & bounds check
+    ], {
+        description: 'Moves a channel to the provided position.',
+        exampleCode: '{channelsetpos;11111111111111111;5}',
+        exampleOut: ''
+    })
+    public async setChannelPosition(context: BBTagContext, channel: GuildChannels, position: number): Promise<void> {
         const permission = channel.permissionsFor(context.authorizer);
-
         if (permission?.has('MANAGE_CHANNELS') !== true)
             throw new BBTagRuntimeError('Author cannot move this channel');
 
-        const pos = parse.int(posStr);//TODO not a number error
-        //TODO maybe also check if the position doesn't exceed any bounds? Like amount of channels / greater than -1?
         try {
-            await channel.edit({ position: pos });
+            await channel.edit({ position });
         } catch (err: unknown) {
             context.logger.error(err);
             throw new BBTagRuntimeError('Failed to move channel: no perms');

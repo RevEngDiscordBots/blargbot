@@ -1,42 +1,32 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { ChannelNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { GuildChannels } from 'discord.js';
 
 export class ChannelTypeSubtag extends Subtag {
     public constructor() {
         super({
             name: 'channeltype',
             category: SubtagType.CHANNEL,
-            desc: 'Possible results: ' + Object.values(channelTypes).map(t => '`' + t + '`').join(', '),
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns the type the current channel.',
-                    exampleCode: '{channeltype}',
-                    exampleOut: 'text',
-                    returns: 'string',
-                    execute: (ctx) => this.getChannelType(ctx, ctx.channel.id, true)
-                },
-                {
-                    parameters: ['channel', 'quiet?'],
-                    description: 'Returns the type the given `channel`. If it cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',
-                    exampleCode: '{channeltype;cool channel}\n{channeltype;some channel that doesn\'t exist;true}',
-                    exampleOut: 'voice\n(nothing is returned here)',
-                    returns: 'string',
-                    execute: (ctx, [channel, quiet]) => this.getChannelType(ctx, channel.value, quiet.value !== '')
-
-                }
-            ]
+            desc: 'Possible results: ' + Object.values(channelTypes).map(t => '`' + t + '`').join(', ')
         });
     }
 
-    public async getChannelType(context: BBTagContext, channelStr: string, quiet: boolean): Promise<typeof channelTypes[keyof typeof channelTypes] | ''> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const channel = await context.queryChannel(channelStr, { noLookup: quiet });
-        if (channel === undefined) {
-            throw new ChannelNotFoundError(channelStr)
-                .withDisplay(quiet ? '' : undefined);
-        }
+    @Subtag.signature('string', [
+        Subtag.context(ctx => ctx.channel)
+    ], {
+        description: 'Returns the type the current channel.',
+        exampleCode: '{channeltype}',
+        exampleOut: 'text'
+    })
+    @Subtag.signature('string', [
+        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns the type the given `channel`. If it cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',
+        exampleCode: '{channeltype;cool channel}\n{channeltype;some channel that doesn\'t exist;true}',
+        exampleOut: 'voice\n(nothing is returned here)'
+    })
+    public getChannelType(channel: GuildChannels): typeof channelTypes[keyof typeof channelTypes] {
         return channelTypes[channel.type];
     }
 }
