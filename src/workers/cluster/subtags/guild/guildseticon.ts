@@ -7,22 +7,19 @@ export class GuildSetIconSubtag extends Subtag {
     public constructor() {
         super({
             name: 'guildseticon',
-            category: SubtagType.GUILD,
-            definition: [
-                {
-                    parameters: ['image'],
-                    description: 'Updates the current guild\'s icon with the provided image. ' +
-                        '`image` is either a link to an image, or a base64 encoded data url (`data:<content-type>;base64,<base64-data>`). You may need to use {semi} for the latter.',
-                    exampleCode: '{guildseticon;https://some.cool/image.png}',
-                    exampleOut: '', //TODO meaningful output
-                    returns: 'nothing',
-                    execute: (ctx, [image]) => this.setGuildIcon(ctx, image.value)
-
-                }
-            ]
+            category: SubtagType.GUILD
         });
     }
 
+    @Subtag.signature('nothing', [ //TODO meaningful output
+        Subtag.context(),
+        Subtag.argument('image', 'string') //TODO add type for image data
+    ], {
+        description: 'Updates the current guild\'s icon with the provided image. ' +
+            '`image` is either a link to an image, or a base64 encoded data url (`data:<content-type>;base64,<base64-data>`). You may need to use {semi} for the latter.',
+        exampleCode: '{guildseticon;https://some.cool/image.png}',
+        exampleOut: ''
+    })
     public async setGuildIcon(context: BBTagContext, image: string): Promise<void> {
         const permission = context.permissions;
 
@@ -40,9 +37,7 @@ export class GuildSetIconSubtag extends Subtag {
 
         try {
             const fullReason = discordUtil.formatAuditReason(context.user, context.scopes.local.reason);
-            await context.guild.edit({
-                icon: image
-            }, fullReason);
+            await context.guild.edit({ icon: image }, fullReason);
         } catch (err: unknown) {
             context.logger.error(err);
             if (err instanceof Error) {

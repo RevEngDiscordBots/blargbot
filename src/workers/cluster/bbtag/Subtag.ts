@@ -4,7 +4,7 @@ import { Logger } from '@core/Logger';
 import { metrics } from '@core/Metrics';
 import { Timer } from '@core/Timer';
 import { Snowflake } from 'catflake';
-import { Emoji, GuildChannels, GuildMember, MessageEmbedOptions, Role, User } from 'discord.js';
+import { Emoji, Guild, GuildChannels, GuildEmoji, GuildMember, MessageEmbedOptions, Role, User } from 'discord.js';
 import { Duration } from 'moment';
 
 import { BBTagContext } from './BBTagContext';
@@ -88,6 +88,13 @@ export abstract class Subtag implements SubtagOptions {
         throw new Error('NotImplemented');
     }
 
+    public static guild(): SubtagParameterDescriptor<Guild>;
+    public static guild<T>(getValue: (guild: Guild) => T): SubtagParameterDescriptor<T>;
+    public static guild(getValue?: (guild: Guild) => unknown): SubtagParameterDescriptor<unknown> {
+        getValue;
+        throw new Error('NotImplemented');
+    }
+
     public static subtagAST(): SubtagParameterDescriptor<SubtagCall>;
     public static subtagAST<T>(getValue: (subtag: SubtagCall) => T): SubtagParameterDescriptor<T>;
     public static subtagAST(getValue?: (subtag: SubtagCall) => unknown): SubtagParameterDescriptor<unknown> {
@@ -152,23 +159,27 @@ type SubtagArgumentTypeMapCore = {
     'bigint': bigint;
     'duration': Duration;
     'boolean': boolean;
-    'json': JToken;
+    'json': JToken; // uses bbtagutil.json.parse
     'user': User;
     'member': GuildMember;
     'channel': GuildChannels;
     'role': Role;
     'emoji': Emoji;
+    'guildEmoji': GuildEmoji;
     'snowflake': string;
-    'json[]': JArray;
 }
 type SubtagArgumentTypeMap =
     & SubtagArgumentTypeMapCore
     & { [P in keyof SubtagArgumentTypeMapCore as `${P}*`]: BBTagRef<SubtagArgumentTypeMapCore[P]> }
     & { [P in keyof SubtagArgumentTypeMapCore as `${P}~`]: BBTagMaybeRef<SubtagArgumentTypeMapCore[P]> }
+    & { [P in keyof SubtagArgumentTypeMapCore as `${P}[]`]: Array<SubtagArgumentTypeMapCore[P]> }
+    & { [P in keyof SubtagArgumentTypeMapCore as `${P}[]*`]: BBTagRef<Array<SubtagArgumentTypeMapCore[P]>> }
+    & { [P in keyof SubtagArgumentTypeMapCore as `${P}[]~`]: BBTagMaybeRef<Array<SubtagArgumentTypeMapCore[P]>> }
     & {
         'deferred': () => Awaitable<string>;
         'ast': Statement;
         'json?': JToken | undefined;
+        'source': string;
     }
 
 type SubtagArgumentType = keyof SubtagArgumentTypeMap;
@@ -201,16 +212,14 @@ interface SubtagPrimitiveParameterOptions {
     readonly useFallback?: boolean;
 }
 
-type SubtagStringParameterOptions = unknown;
-
 type SubtagNumberParameterOptions = SubtagPrimitiveParameterOptions
+
 interface SubtagBooleanParameterOptions extends SubtagPrimitiveParameterOptions {
     readonly mode?: 'parse' | 'notEmpty' | 'tryParseOrNotEmpty';
 }
 
 type TypeSpecificSubtagParameterOptions<Type> =
     & (Type extends number ? SubtagNumberParameterOptions : unknown)
-    & (Type extends string ? SubtagStringParameterOptions : unknown)
     & (Type extends boolean ? SubtagBooleanParameterOptions : unknown)
 
 type SubtagParameterOptions<Type> = TypeSpecificSubtagParameterOptions<Type> & {

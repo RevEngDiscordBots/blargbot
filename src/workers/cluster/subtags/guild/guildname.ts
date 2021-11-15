@@ -1,25 +1,23 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { Guild } from 'discord.js';
 
 export class GuildNameSubtag extends Subtag {
     public constructor() {
         super({
             name: 'guildname',
             category: SubtagType.GUILD,
-            desc: 'Returns the name of the current guild.',
-            definition: [
-                {
-                    parameters: [],
-                    exampleCode: 'This guild\'s name is {guildname}.',
-                    exampleOut: 'This guild\'s name is TestGuild.',
-                    returns: 'string',
-                    execute: (ctx) => this.getGuildName(ctx)
-                }
-            ]
+            desc: 'Returns the name of the current guild.'
         });
     }
 
-    public getGuildName(context: BBTagContext): string {
-        return context.guild.name;
+    @Subtag.signature('string', [
+        Subtag.guild()
+    ], {
+        exampleCode: 'This guild\'s name is {guildname}.',
+        exampleOut: 'This guild\'s name is TestGuild.'
+    })
+    public getGuildName(guild: Guild): string {
+        return guild.name;
     }
 }

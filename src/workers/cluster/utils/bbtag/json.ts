@@ -55,43 +55,42 @@ export function parseSync(input: string): JObject | JArray {
         obj = {};
     return obj;
 }
-export function get(input: JObject | JArray, path: string | string[]): JToken | undefined {
-    let obj: undefined | JToken = input;
+export function get(token: JToken | undefined, path: string | string[]): JToken | undefined {
     if (typeof path === 'string')
         path = path.split('.');
     for (const part of path) {
-        if (typeof obj === 'string') {
+        if (typeof token === 'string') {
             try {
-                obj = JSON.parse(obj);
+                token = JSON.parse(token);
             } catch (err: unknown) {
                 // NOOP
             }
         }
 
-        if (typeof obj === 'object' && !Array.isArray(obj) && obj !== null) {
-            const keys = Object.keys(obj);
+        if (typeof token === 'object' && !Array.isArray(token) && token !== null) {
+            const keys = Object.keys(token);
             if (keys.length === 2 && keys.includes('v') && keys.includes('n') && /^\d+$/.test(part)) {
-                obj = obj.v;
+                token = token.v;
             }
         }
-        if (obj === undefined)
+        if (token === undefined)
             throw Error(`Cannot read property ${part} of undefined`);
-        else if (obj === null)
+        else if (token === null)
             throw Error(`Cannot read property ${part} of null`);
-        else if (typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, part)) {
-            if (Array.isArray(obj))
-                obj = obj[parseInt(part)];
+        else if (typeof token === 'object' && Object.prototype.hasOwnProperty.call(token, part)) {
+            if (Array.isArray(token))
+                token = token[parseInt(part)];
             else
-                obj = obj[part];
-        } else if (typeof obj === 'string')
-            obj = obj[parseInt(part)];
+                token = token[part];
+        } else if (typeof token === 'string')
+            token = token[parseInt(part)];
         else
-            obj = undefined;
+            token = undefined;
     }
-    return obj;
+    return token;
 }
 
-export function set<T extends JObject | JArray>(input: T, path: string | string[], value: JToken | undefined, forceCreate = false): T {
+export function set<T extends JToken>(input: T, path: string | string[], value: JToken | undefined, forceCreate = false): T {
     if (typeof path === 'string')
         path = path.split('.');
     const comps = path;

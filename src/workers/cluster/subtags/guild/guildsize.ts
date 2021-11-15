@@ -1,5 +1,6 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { Guild } from 'discord.js';
 
 export class GuildSizeSubtag extends Subtag {
     public constructor() {
@@ -7,20 +8,17 @@ export class GuildSizeSubtag extends Subtag {
             name: 'guildsize',
             aliases: ['inguild'],
             category: SubtagType.GUILD,
-            desc: 'Returns the number of members on the current guild.',
-            definition: [
-                {
-                    parameters: [],
-                    exampleCode: 'This guild has {guildsize} members.',
-                    exampleOut: 'This guild has 123 members.',
-                    returns: 'number',
-                    execute: (ctx) => this.getGuildMemberCount(ctx)
-                }
-            ]
+            desc: 'Returns the number of members on the current guild.'
         });
     }
 
-    public getGuildMemberCount(context: BBTagContext): number {
-        return context.guild.memberCount;
+    @Subtag.signature('integer', [
+        Subtag.guild()
+    ], {
+        exampleCode: 'This guild has {guildsize} members.',
+        exampleOut: 'This guild has 123 members.'
+    })
+    public getGuildMemberCount(guild: Guild): number {
+        return guild.memberCount;
     }
 }

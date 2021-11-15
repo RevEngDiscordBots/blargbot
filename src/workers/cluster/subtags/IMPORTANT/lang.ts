@@ -6,20 +6,15 @@ export class LangSubtag extends Subtag {
         super({
             name: 'lang',
             category: SubtagType.LANG,
-            deprecated: true,
-            definition: [
-                {
-                    parameters: ['language'],
-                    description: 'Specifies which `language` should be used when viewing the raw of this tag',
-                    exampleCode: 'This will be displayed with js! {lang;js}.',
-                    exampleOut: 'This will be displayed with js!.',
-                    returns: 'nothing',
-                    execute: () => this.godIHateThisSubtag()
-                }
-            ]
+            deprecated: true
         });
     }
 
+    @Subtag.signature('nothing', [], {
+        description: 'Specifies which `language` should be used when viewing the raw of this tag',
+        exampleCode: 'This will be displayed with js! {lang;js}.',
+        exampleOut: 'This will be displayed with js!.'
+    })
     public godIHateThisSubtag(): void {
         /* NOOP */
     }
