@@ -124,14 +124,18 @@ export interface BBTagArray { // TODO BBTagRef
     n: string;
 }
 
-export interface BBTagRef<T> {
+export interface BBTagRef<T extends JToken | undefined = JToken | undefined> {
     readonly name: string;
-    value: T;
+    get(): T;
+    set(value: T): void;
+    reset(): void;
 }
 
-export type BBTagMaybeRef<T> = {
+export type BBTagMaybeRef<T extends JToken | undefined = JToken | undefined> = {
     readonly name?: string;
-    value: T;
+    get(): T;
+    set(value: T): void;
+    reset(): void;
 };
 
 export interface SourceToken {

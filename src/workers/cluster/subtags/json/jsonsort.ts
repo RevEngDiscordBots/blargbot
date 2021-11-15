@@ -33,7 +33,7 @@ export class JsonSortSubtag extends Subtag {
         if (path === '')
             throw new BBTagRuntimeError('No path provided');
 
-        const mappedArray = array.value.map(item => {
+        const mappedArray = array.get().map(item => {
             try {
                 let baseObj: JObject | JArray;
                 if (typeof item === 'string')
@@ -55,7 +55,7 @@ export class JsonSortSubtag extends Subtag {
             throw new BBTagRuntimeError(`Cannot read property ${path} at index ${mappedArray.indexOf(undefined).toString()}, ${undefinedItems.length.toString()} total failures`);
 
         const dir = descending ? -1 : 1;
-        return array.value.sort((a, b) => {
+        return array.get().sort((a, b) => {
             let aObj: JObject | JArray;
             let bObj: JObject | JArray;
             if (typeof a === 'string')

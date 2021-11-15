@@ -47,13 +47,13 @@ export class CustomCommandLimit extends GlobalLimit {
             .addRules('waitmessage', new UseCountRule(10))
             .addRules('waitreaction', new UseCountRule(20))
             .addRules([
-                'for:loops',
-                'repeat:loops',
-                'while:loops'
+                'for:code',
+                'repeat:code',
+                'while:code'
             ], new UseCountRule(10000, 'loops', () => new TooManyLoopsError(10000)))
-            .addRules('foreach:loops', new UseCountRule(100000, 'loops', () => new TooManyLoopsError(100000)))
-            .addRules('map:loops', new UseCountRule(100000, 'loops', () => new TooManyLoopsError(100000)))
-            .addRules('filter:loops', new UseCountRule(100000, 'loops', () => new BBTagRuntimeError('Max safeloops reached')))
+            .addRules('foreach:code', new UseCountRule(100000, 'loops', () => new TooManyLoopsError(100000)))
+            .addRules('map:code', new UseCountRule(100000, 'loops', () => new TooManyLoopsError(100000)))
+            .addRules('filter:code', new UseCountRule(100000, 'loops', () => new BBTagRuntimeError('Max safeloops reached')))
             .addRules('dump', new UseCountRule(5));
     }
 }

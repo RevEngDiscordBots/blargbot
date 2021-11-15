@@ -1,5 +1,5 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { RuntimeReturnState } from '@cluster/types';
+import { BBTagRef, RuntimeReturnState } from '@cluster/types';
 import { SubtagType } from '@cluster/utils';
 
 export class MapSubtag extends Subtag {
@@ -12,7 +12,7 @@ export class MapSubtag extends Subtag {
 
     @Subtag.signature('(string|error)[]', [
         Subtag.context(),
-        Subtag.argument('variable', 'string'),
+        Subtag.argument('variable', 'variable'),
         Subtag.argument('array', 'json[]', { isVariableName: 'maybe' }),
         Subtag.argument('code', 'deferred')
     ], {
@@ -23,18 +23,17 @@ export class MapSubtag extends Subtag {
         exampleCode: '{map;~item;["apples","oranges","pears"];{upper;{get;~item}}}',
         exampleOut: '["APPLES","ORANGES","PEARS"]'
     })
-    public async * map(context: BBTagContext, varName: string, array: JArray, code: () => Awaitable<string>): AsyncIterable<string> {
+    public async * map(context: BBTagContext, variable: BBTagRef, array: JArray, code: () => Awaitable<string>): AsyncIterable<string> {
         try {
             for (const item of array) {
-                await context.limit.check(context, 'map:loops');
-                await context.variables.set(varName, item);
+                variable.set(item);
                 yield await code();
 
                 if (context.state.return !== RuntimeReturnState.NONE)
                     break;
             }
         } finally {
-            await context.variables.reset(varName);
+            variable.reset();
         }
     }
 }

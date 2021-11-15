@@ -46,13 +46,13 @@ export class EverythingAutoResponseLimit extends GlobalLimit {
             .addRules('waitmessage', disabledRule)
             .addRules('waitreaction', disabledRule)
             .addRules([
-                'for:loops',
-                'repeat:loops',
-                'while:loops'
+                'for:code',
+                'repeat:code',
+                'while:code'
             ], new UseCountRule(1000, 'loops', () => new TooManyLoopsError(1000)))
-            .addRules('foreach:loops', new UseCountRule(10000, 'loops', () => new TooManyLoopsError(10000)))
-            .addRules('map:loops', new UseCountRule(10000, 'loops', () => new TooManyLoopsError(10000)))
-            .addRules('filter:loops', new UseCountRule(10000, 'loops', () => new BBTagRuntimeError('Max safeloops reached')))
+            .addRules('foreach:code', new UseCountRule(10000, 'loops', () => new TooManyLoopsError(10000)))
+            .addRules('map:code', new UseCountRule(10000, 'loops', () => new TooManyLoopsError(10000)))
+            .addRules('filter:code', new UseCountRule(10000, 'loops', () => new BBTagRuntimeError('Max safeloops reached')))
             .addRules('dump', new UseCountRule(5));
     }
 }

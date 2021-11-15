@@ -90,7 +90,7 @@ export function get(token: JToken | undefined, path: string | string[]): JToken 
     return token;
 }
 
-export function set<T extends JToken>(input: T, path: string | string[], value: JToken | undefined, forceCreate = false): T {
+export function set<T extends JToken>(input: T, path: string | string[], value: JToken | undefined, forceCreate = false): void {
     if (typeof path === 'string')
         path = path.split('.');
     const comps = path;
@@ -157,8 +157,6 @@ export function set<T extends JToken>(input: T, path: string | string[], value: 
         if (err instanceof Error)
             throw err;
     }
-
-    return input;
 }
 
 export function clean(input: JToken): JToken {

@@ -1,4 +1,5 @@
 import { BBTagContext, Subtag, tagVariableScopes } from '@cluster/bbtag';
+import { BBTagRef } from '@cluster/types';
 import { SubtagType } from '@cluster/utils';
 
 export class SetSubtag extends Subtag {
@@ -10,20 +11,18 @@ export class SetSubtag extends Subtag {
     }
 
     @Subtag.signature('nothing', [
-        Subtag.context(),
-        Subtag.argument('variableName', 'string')
+        Subtag.argument('variable', 'variable')
     ], {
         description: 'Sets the `name` variable to nothing.',
         exampleCode: '{set;~var;something}\n{set;~var}\n{get;~var}',
         exampleOut: '(returns nothing)'
     })
-    public async clearVariable(context: BBTagContext, variableName: string): Promise<void> {
-        await context.variables.set(variableName, undefined);
+    public clearVariable(variable: BBTagRef): void {
+        variable.set(undefined);
     }
 
     @Subtag.signature('nothing', [
-        Subtag.context(),
-        Subtag.argument('variableName', 'string'),
+        Subtag.argument('variableName', 'variable'),
         Subtag.argument('value', 'json')
     ], {
         description: 'Stores `value` under `name`. These variables are saved between sessions. ' +
@@ -34,13 +33,12 @@ export class SetSubtag extends Subtag {
         exampleCode: '{set;var1;This is local var1}\n{set;~var2;This is temporary var2}\n{get;var1}\n{get;~var2}',
         exampleOut: 'This is local var1\nThis is temporary var2'
     })
-    public async setVariable(context: BBTagContext, variableName: string, value: JToken): Promise<void> {
-        await context.variables.set(variableName, value ?? undefined);
+    public setVariable(variable: BBTagRef, value: JToken): void {
+        variable.set(value ?? undefined);
     }
 
     @Subtag.signature('nothing', [
-        Subtag.context(),
-        Subtag.argument('variableName', 'string'),
+        Subtag.argument('variable', 'variable'),
         Subtag.argument('value', 'string', { repeat: [0, Infinity] }) // TODO: Maybe json data type?
     ], {
         description: 'Stores an array under `name`.' +
@@ -50,7 +48,7 @@ export class SetSubtag extends Subtag {
         exampleCode: '{set;var3;this;is;an;array}\n{get;var3}',
         exampleOut: '{"v":["this","is","an","array"],"n":"var3"}'
     })
-    public async setArray(context: BBTagContext, variableName: string, arrayElements: string[]): Promise<void> {
+    public setArray(variable: BBTagRef, arrayElements: string[]): void {
         const result = [];
         for (const element of arrayElements) {
             try {
@@ -64,6 +62,6 @@ export class SetSubtag extends Subtag {
                 result.push(element);
             }
         }
-        await context.variables.set(variableName, result);
+        variable.set(result);
     }
 }

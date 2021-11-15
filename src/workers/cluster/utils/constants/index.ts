@@ -6,4 +6,3 @@ export * from './moderationType';
 export * from './modlogColour';
 export * from './subtagArgumentKind';
 export * from './subtagType';
-export * as overrides from './overrides';

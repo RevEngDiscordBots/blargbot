@@ -29,7 +29,7 @@ export class ShuffleSubtag extends Subtag {
         exampleCode: '{shuffle;{get;~myarray}}'
     })
     public shuffleReference(array: BBTagRef<JArray>): void {
-        shuffle(array.value);
+        shuffle(array.get());
     }
 
     @Subtag.signature('json[]', [

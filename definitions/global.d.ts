@@ -28,6 +28,10 @@ declare global {
     type LowerLetter = Lowercase<'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'>;
     type UpperLetter = Uppercase<LowerLetter>;
     type Letter = LowerLetter | UpperLetter;
+    type Letters<T extends string> = IsLetters<T> extends true ? T : never;
+    type IsLetters<T extends string> = T extends `${infer Char}${infer Rest}`
+        ? Char extends Letter ? IsLetters<Rest> : false : true;
+
     type Numeric = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
     type Alphanumeric = Letter | Numeric;
 

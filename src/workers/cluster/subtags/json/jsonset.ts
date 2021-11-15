@@ -36,7 +36,7 @@ export class JsonSetSubtag extends Subtag {
     })
     public setReferenceValue(item: BBTagRef<JToken>, path: string, value: JToken | undefined, create: boolean): void {
         try {
-            item.value = bbtagUtil.json.set(item.value, path, value, value !== undefined && create);
+            bbtagUtil.json.set(item.get(), path, value, value !== undefined && create);
         } catch (err: unknown) {
             if (err instanceof Error)
                 throw new BBTagRuntimeError(err.message);
@@ -68,7 +68,8 @@ export class JsonSetSubtag extends Subtag {
     })
     public setLiteralValue(item: JToken, path: string, value: JToken | undefined, create: boolean): JToken {
         try {
-            return bbtagUtil.json.set(item, path, value, value !== undefined && create);
+            bbtagUtil.json.set(item, path, value, value !== undefined && create);
+            return item;
         } catch (err: unknown) {
             if (err instanceof Error)
                 throw new BBTagRuntimeError(err.message);
