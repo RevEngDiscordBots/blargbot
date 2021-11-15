@@ -11,14 +11,14 @@ export class JsonStringifySubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.argument('input', 'json', { isVariableName: 'maybe', ifOmitted: {} }),
+        Subtag.argument('input', 'json', { isVariableName: 'maybe', ifOmitted: undefined }),
         Subtag.argument('indent', 'integer', { ifOmitted: 4 })
     ], {
         description: 'Pretty-prints the provided JSON `input` with the provided `indent`.',
         exampleCode: '{jsonstringify;["one","two","three"]}',
         exampleOut: '[\n    "one",\n    "two",\n    "three"\n]'
     })
-    public jsonStringify(input: JToken, indent: number): string {
+    public jsonStringify(input: JToken = {}, indent: number): string {
         return JSON.stringify(input, null, indent);
     }
 }

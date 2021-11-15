@@ -1,135 +1,93 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, ChannelNotFoundError, MessageNotFoundError } from '@cluster/bbtag/errors';
-import { guard, parse, SubtagType } from '@cluster/utils';
-import { EmbedFieldData, MessageEmbed, MessageEmbedOptions } from 'discord.js';
+import { BBTagContext, ParseResult, Subtag } from '@cluster/bbtag';
+import { BBTagRuntimeError, MessageNotFoundError } from '@cluster/bbtag/errors';
+import { SubtagType } from '@cluster/utils';
+import { GuildChannels, MessageEmbedOptions } from 'discord.js';
 
 export class EditSubtag extends Subtag {
     public constructor() {
         super({
             name: 'edit',
             category: SubtagType.MESSAGE,
-            desc: '`text` and `embed` can both be set to `_delete` to remove either the message content or embed.' +
-                'Please note that `embed` is the JSON for an embed object or an array of embed objects, don\'t put `{embed}` there, as nothing will show. Only messages created by the bot may be edited.',
-            definition: [//! Overwritten
-                {
-                    parameters: ['messageId', 'text|embed'],
-                    returns: 'nothing',
-                    execute: (ctx, [messageId, content]) => this.edit(ctx, ctx.channel.id, messageId.value, content.value)
-                },
-                {
-                    parameters: ['messageId|channelId', 'messageId|text', '(text|embed)|(embed)'],
-                    returns: 'nothing',
-                    execute: async (ctx, [chanOrMessage, messageOrText, content]) => {
-                        const channel = await ctx.queryChannel(chanOrMessage.value, { noLookup: true });
-                        if (channel === undefined)
-                            //{edit;msg;text;embed}
-                            return this.edit(ctx, ctx.channel.id, chanOrMessage.value, messageOrText.value, content.value);
-
-                        //{edit;channel;msg;text|embed}
-                        return this.edit(ctx, channel.id, messageOrText.value, content.value);
-
-                    }
-                },
-                {
-                    parameters: ['channelId', 'messageID', 'text', 'embed'],
-                    returns: 'nothing',
-                    execute: (ctx, [channelId, messageId, text, embed]) => this.edit(ctx, channelId.value, messageId.value, text.value, embed.value)
-                }
-            ]
+            desc: '`content` and `embed` can both be set to `_delete` to remove either the message content or embed.' +
+                'Please note that `embed` is the JSON for an embed object or an array of embed objects, don\'t put `{embed}` there, as nothing will show. Only messages created by the bot may be edited.'
         });
     }
 
-    public async edit(
-        context: BBTagContext,
-        channelStr: string,
-        messageStr: string,
-        contentStr: string,
-        embedStr?: string
-    ): Promise<void> {
-        const channel = await context.queryChannel(channelStr, { noLookup: true });
-        if (channel === undefined)
-            throw new ChannelNotFoundError(channelStr);
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.context(ctx => ctx.channel),
+        Subtag.argument('messageId', 'snowflake'),
+        Subtag.useValue(undefined),
+        Subtag.argument('embeds', 'embed[]', { ifInvalid: shouldDeleteEmbeds })
+    ], {
+        description: 'Edits a `message` that I sent in the current channel to have the `embeds` given.',
+        exampleCode: '{edit;111111111111111111;{embedbuild;title:Hello world}}'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.context(ctx => ctx.channel),
+        Subtag.argument('messageId', 'snowflake'),
+        Subtag.argument('content', 'string'),
+        Subtag.useValue(undefined)
+    ], {
+        description: 'Edits a `message` that I sent in the current channel to have the `content` given.',
+        exampleCode: '{edit;111111111111111111;Hello world}'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel'),
+        Subtag.argument('messageId', 'snowflake'),
+        Subtag.useValue(undefined),
+        Subtag.argument('embeds', 'embed[]', { ifInvalid: shouldDeleteEmbeds })
+    ], {
+        description: 'Edits a `message` that I sent in the `channel` to have the `embeds` given.',
+        exampleCode: '{edit;111111111111111111;222222222222222222;{embedbuild;title:Hello world}}'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel'),
+        Subtag.argument('messageId', 'snowflake'),
+        Subtag.argument('content', 'string'),
+        Subtag.useValue(undefined)
+    ], {
+        description: 'Edits a `message` that I sent in the `channel` to have the `content` given.',
+        exampleCode: '{edit;111111111111111111;222222222222222222;Hello world}'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel'),
+        Subtag.argument('messageId', 'snowflake'),
+        Subtag.argument('content', 'string'),
+        Subtag.argument('embeds', 'embed[]', { allowMalformed: true, ifInvalid: shouldDeleteEmbeds })
+    ], {
+        description: 'Edits a `message` that I sent in the `channel` to have the `content` and `embeds` given.',
+        exampleCode: '{edit;111111111111111111;222222222222222222;Hello world;{embedbuild;title:Foo bar}}'
+    })
+    public async edit(context: BBTagContext, channel: GuildChannels, messageId: string, content?: string, embeds?: MessageEmbedOptions[]): Promise<void> {
+        const message = await context.util.getMessage(channel.id, messageId);
 
-        let content: string | undefined;
-        let embeds: MessageEmbed[] | MessageEmbedOptions[] | undefined;
-        if (embedStr !== undefined) {
-            embeds = parse.embed(embedStr);
-            content = contentStr;
-        } else {
-            const parsedEmbed = parse.embed(contentStr);
-            if (parsedEmbed === undefined || guard.hasProperty(parsedEmbed, 'malformed')) {
-                content = contentStr;
-            } else {
-                embeds = parsedEmbed;
-            }
-        }
+        if (message === undefined)
+            throw new MessageNotFoundError(channel, messageId);
 
+        if (message.author.id !== context.discord.user.id)
+            throw new BBTagRuntimeError('I must be the message author');
+
+        content = content ?? message.content;
+        if (content === '_delete') content = '';
+
+        const actualEmbeds = embeds ?? message.embeds;
+        if (content.trim() === '' && actualEmbeds.length === 0)
+            throw new BBTagRuntimeError('Message cannot be empty');
         try {
-            const message = await context.util.getMessage(channel.id, messageStr);
-
-            if (message === undefined)
-                throw new MessageNotFoundError(channel, messageStr);
-            if (message.author.id !== context.discord.user.id)
-                throw new BBTagRuntimeError('I must be the message author');
-            content = content ?? message.content;
-            embeds = embeds ?? message.embeds;
-
-            if (contentStr === '_delete') content = '';
-            if (embedStr === '_delete') embeds = [];
-
-            if (content.trim() === '' && embeds.length === 0)
-                throw new BBTagRuntimeError('Message cannot be empty');
-            try {
-                await message.edit({
-                    content,
-                    embeds
-                });
-            } catch (err: unknown) {
-                // NOOP
-            }
+            await message.edit({ content, embeds: actualEmbeds });
         } catch (err: unknown) {
-            throw new BBTagRuntimeError('Unable to get message');
+            // NOOP
         }
     }
+}
 
-    public enrichDocs(embed: MessageEmbedOptions): MessageEmbedOptions {
-        const limitField = <EmbedFieldData>embed.fields?.pop();
-
-        embed.fields = [
-            {
-                name: 'Usage',
-                value: '```\n{edit;<messageID>;<text|embed>}```\n' +
-                    'Edits `messageID` in the current channel to say `text` or `embed`.\n\n' +
-                    '**Example code:**\n' +
-                    '> {edit;111111111111111111;{embedbuild;title:Hello world}}\n**Example out:**\n' +
-                    '> (the message got edited idk how to do examples for this)'
-            },
-            {
-                name: '\u200b',
-                value: '```\n{edit;<channelID>;<messageID>;<text|embed>}```\n' +
-                    'Edits `messageID` in `channelID` to say `text` or `embed`.\n\n' +
-                    '**Example code:**\n' +
-                    '> {edit;111111111111111111;222222222222222222;Hello world}\n**Example out:**\n' +
-                    '> (the message got edited idk how to do examples for this)'
-            },
-            {
-                name: '\u200b',
-                value: '```\n{edit;<messageID>;<text>;<embed>}```\n' +
-                    'Edits `messageID` in the current channel to say `text` and `embed`.\n\n' +
-                    '**Example code:**\n' +
-                    '> {edit;111111111111111111;Hello world;{embedbuild;title:Foo bar}}\n**Example out:**\n' +
-                    ' (the message got edited idk how to do examples for this)'
-            },
-            {
-                name: '\u200b',
-                value: '```\n{edit;<channelID>;<messageID>;<text>;<embed>}```\n' +
-                    'Edits `messageID` in `channelID` to say `text` and `embed`.\n\n' +
-                    '**Example code:**\n' +
-                    '> {edit;111111111111111111;222222222222222222;Hello world;{embedbuild;title:Foo bar}}\n**Example out:**\n' +
-                    '> (the message got edited idk how to do examples for this)'
-            }
-        ];
-        embed.fields.push(limitField);
-        return embed;
-    }
+function shouldDeleteEmbeds(value: string): ParseResult<[]> {
+    if (value === '_delete')
+        return { success: true, value: [] };
+    return { success: false };
 }

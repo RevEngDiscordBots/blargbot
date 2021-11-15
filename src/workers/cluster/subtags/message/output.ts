@@ -6,26 +6,24 @@ export class OutputSubtag extends Subtag {
     public constructor() {
         super({
             name: 'output',
-            category: SubtagType.MESSAGE,
-            definition: [
-                {
-                    parameters: ['text?'],
-                    description: 'Forces an early send of the default output message, using `text` as the text to show. ' +
-                        'If this is used then there will be no output sent once the tag finishes. Only 1 `{output}` may be used per ' +
-                        'tag/cc. If a second `{output}` is used then the result of the first `{output}` will be returned instead.' +
-                        '\nThe message id of the output that was sent will be returned.',
-                    exampleCode: '{output;Hello!}',
-                    exampleOut: 'Hello!',
-                    returns: 'id',
-                    execute: (ctx, [text]) => this.sendTagOutput(ctx, text.value)
-                }
-            ]
+            category: SubtagType.MESSAGE
         });
     }
 
-    public async sendTagOutput(context: BBTagContext, text: string): Promise<string> {
-        if (context.state.outputMessage !== undefined && text.length > 0)
+    @Subtag.signature('snowflake?', [
+        Subtag.context(),
+        Subtag.argument('text', 'string', { ifOmitted: undefined })
+    ], {
+        description: 'Forces an early send of the default output message, using `text` as the text to show. ' +
+            'If this is used then there will be no output sent once the tag finishes. Only 1 `{output}` may be used per ' +
+            'tag/cc. If a second `{output}` is used then the result of the first `{output}` will be returned instead.' +
+            '\nThe message id of the message that was sent will be returned.',
+        exampleCode: '{output;Hello!}',
+        exampleOut: 'Hello!'
+    })
+    public async sendTagOutput(context: BBTagContext, text?: string): Promise<string | undefined> {
+        if (context.state.outputMessage !== undefined && text !== undefined)
             throw new BBTagRuntimeError('Cannot send multiple outputs');
-        return await context.sendOutput(text) ?? '';
+        return await context.sendOutput(text);
     }
 }

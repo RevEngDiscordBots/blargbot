@@ -1,44 +1,38 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { BBTagRuntimeError, MessageNotFoundError } from '@cluster/bbtag/errors';
 import { SubtagType } from '@cluster/utils';
+import { GuildChannels } from 'discord.js';
 
 export class ReactRemoveAllSubtag extends Subtag {
     public constructor() {
         super({
             name: 'reactremoveall',
-            category: SubtagType.MESSAGE,
             aliases: ['removereactall'],
-            definition: [
-                {
-                    parameters: ['channelID?', 'messageID'], /*
-                        TODO I hate this. Just because it's optional means there is no channel lookup at all. This should be more strongly defined as in it should allow leaving it empty, or omitting it, but if it's not empty attempt to lookup. This applies to other react subtags as well
-                    */
-                    description: 'Removes all reactions from `messageId`.\n`channelId` defaults to the current channel.',
-                    exampleCode: '{reactremoveall;12345678901234;:thinking:}',
-                    exampleOut: '(removed all the reactions)',
-                    returns: 'nothing',
-                    execute: (ctx, [channel, message]) => this.removeAllReactions(ctx, channel.value, message.value)
-                }
-            ]
+            category: SubtagType.MESSAGE
         });
     }
 
-    public async removeAllReactions(context: BBTagContext, channelStr: string, messageID: string): Promise<void> {
-        let message;
-        let channel;
-
-        channel = await context.queryChannel(channelStr, { noLookup: true });
-        if (channel === undefined)
-            channel = context.channel;
-
-        try {
-            message = await context.util.getMessage(channel, messageID);
-        } catch (e: unknown) {
-            // NOOP
-        }
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { noLookup: true }),
+        Subtag.argument('messageId', 'snowflake')
+    ], {
+        description: 'Removes all reactions from `messageId` in `channel`.',
+        exampleCode: '{reactremoveall;#support;11111111111111}'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.context(ctx => ctx.channel),
+        Subtag.argument('messageId', 'snowflake')
+    ], {
+        description: 'Removes all reactions from `messageId` in the current channel.',
+        exampleCode: '{reactremoveall;11111111111111}'
+    })
+    public async removeAllReactions(context: BBTagContext, channel: GuildChannels, messageId: string): Promise<void> {
+        const message = await context.util.getMessage(channel, messageId);
 
         if (message === undefined)
-            throw new MessageNotFoundError(channel, messageID);
+            throw new MessageNotFoundError(channel, messageId);
 
         if (!(await context.isStaff || context.ownsMessage(message.id)))
             throw new BBTagRuntimeError('Author must be staff to modify unrelated messages');

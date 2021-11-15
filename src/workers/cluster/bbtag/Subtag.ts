@@ -4,7 +4,7 @@ import { Logger } from '@core/Logger';
 import { metrics } from '@core/Metrics';
 import { Timer } from '@core/Timer';
 import { Snowflake } from 'catflake';
-import { Emoji, Guild, GuildChannels, GuildEmoji, GuildMember, MessageEmbedOptions, Role, User } from 'discord.js';
+import { EmojiIdentifierResolvable, Guild, GuildChannels, GuildEmoji, GuildMember, MessageEmbedOptions, Role, User } from 'discord.js';
 import { Duration } from 'moment';
 
 import { BBTagContext } from './BBTagContext';
@@ -47,11 +47,9 @@ export abstract class Subtag implements SubtagOptions {
         }
     }
 
-    public enrichDocs(docs: MessageEmbedOptions): MessageEmbedOptions {
-        return docs;
-    }
+    public enrichDocs: never;
 
-    public static signature<Return extends SubtagReturnType, Parameters extends readonly SubtagParameterDescriptor[] | []>(returns: Return, parameters: Parameters, details?: SubtagSignatureOptions): SubtagSignatureDecorator<Return, Parameters> {
+    public static signature<Return extends SubtagReturnType, Parameters extends readonly SubtagParameterDescriptor[] | []>(returns: Return, parameters: Parameters, details: SubtagSignatureOptions): SubtagSignatureDecorator<Return, Parameters> {
         returns;
         parameters;
         details;
@@ -59,11 +57,11 @@ export abstract class Subtag implements SubtagOptions {
     }
 
     public static argument<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options?: SubtagParameterOptions<SubtagArgumentTypeMap[Type]>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type]>;
-    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: SubtagFallbackParameterOptions<SubtagArgumentTypeMap[Type] | Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Default>;
+    public static argument<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options: SubtagFallbackParameterOptions<SubtagArgumentTypeMap[Type]>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type]>;
     public static argument<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options: RepeatedSubtagParameterOptions<SubtagArgumentTypeMap[Type]>): NamedSubtagParameterDescriptor<Name, Array<SubtagArgumentTypeMap[Type]>>;
-    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: RepeatedFallbackSubtagParameterOptions<SubtagArgumentTypeMap[Type] | Default>): NamedSubtagParameterDescriptor<Name, Array<SubtagArgumentTypeMap[Type] | Default>>;
-    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: OptionalSubtagParameterOptions<SubtagArgumentTypeMap[Type] | Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Default>;
-    public static argument<Name extends string, Type extends SubtagArgumentType, Default>(name: Name, type: Type, options: OptionalFallbackSubtagParameterOptions<SubtagArgumentTypeMap[Type] | Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Default>;
+    public static argument<Name extends string, Type extends SubtagArgumentType>(name: Name, type: Type, options: RepeatedFallbackSubtagParameterOptions<SubtagArgumentTypeMap[Type]>): NamedSubtagParameterDescriptor<Name, Array<SubtagArgumentTypeMap[Type]>>;
+    public static argument<Name extends string, Type extends SubtagArgumentType, Default extends OptionalValueType>(name: Name, type: Type, options: OptionalSubtagParameterOptions<SubtagArgumentTypeMap[Type], Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Exclude<Default, string>>;
+    public static argument<Name extends string, Type extends SubtagArgumentType, Default extends OptionalValueType>(name: Name, type: Type, options: OptionalFallbackSubtagParameterOptions<SubtagArgumentTypeMap[Type], Default>): NamedSubtagParameterDescriptor<Name, SubtagArgumentTypeMap[Type] | Exclude<Default, string>>;
     public static argument<T>(name: string, type: SubtagArgumentType, options?: AnySubtagParameterOptions<T>): NamedSubtagParameterDescriptor<string, T> {
         name;
         type;
@@ -176,8 +174,9 @@ type SubtagArgumentTypeMapCore = SubtagRefableArgumentTypeMapCore & {
     'member': GuildMember;
     'channel': GuildChannels;
     'role': Role;
-    'emoji': Emoji;
+    'emoji': EmojiIdentifierResolvable;
     'guildEmoji': GuildEmoji;
+    'embed': MessageEmbedOptions;
 }
 type SubtagArgumentTypeMap =
     & SubtagArgumentTypeMapCore
@@ -202,6 +201,7 @@ interface SubtagSignatureOptions {
     readonly exampleCode?: string;
     readonly exampleIn?: string;
     readonly exampleOut?: string;
+    readonly hidden?: boolean;
 }
 
 interface BaseParseResult<T> {
@@ -230,10 +230,15 @@ type SubtagNumberParameterOptions = SubtagPrimitiveParameterOptions
 interface SubtagBooleanParameterOptions extends SubtagPrimitiveParameterOptions {
     readonly mode?: 'parse' | 'notEmpty' | 'tryParseOrNotEmpty';
 }
+interface SubtagEmbedParameterOptions {
+    readonly allowMalformed?: boolean;
+}
 
 type TypeSpecificSubtagParameterOptions<Type> =
     & (Type extends number ? SubtagNumberParameterOptions : unknown)
     & (Type extends boolean ? SubtagBooleanParameterOptions : unknown)
+    & (Type extends MessageEmbedOptions | MessageEmbedOptions[] ? SubtagEmbedParameterOptions : unknown)
+    & (Type extends readonly unknown[] ? SubtagArrayParameterOptions : unknown)
 
 type SubtagParameterOptions<Type> = TypeSpecificSubtagParameterOptions<Type> & {
     readonly isVariableName?: boolean | 'maybe';
@@ -241,32 +246,39 @@ type SubtagParameterOptions<Type> = TypeSpecificSubtagParameterOptions<Type> & {
     readonly maxSourceLength?: number;
     readonly quietErrorDisplay?: string;
     readonly customError?: string | ((value: string) => BBTagRuntimeError | string);
+    readonly noLookup?: boolean;
+    readonly quiet?: boolean;
 }
 
 type SubtagFallbackParameterOptions<Type> = SubtagParameterOptions<Type> & {
     readonly ifInvalid: ((value: string) => ParseResult<Type>) | Type;
 }
 
-type RepeatedSubtagParameterOptions<Type> = SubtagParameterOptions<Type> & {
-    readonly repeat: readonly [minCount: number, maxCount: number];
+type SubtagArrayParameterOptions = {
     readonly flattenArrays?: boolean;
+}
+
+type RepeatedSubtagParameterOptions<Type> = SubtagParameterOptions<Type> & SubtagArrayParameterOptions & {
+    readonly repeat: readonly [minCount: number, maxCount: number];
 }
 
 type RepeatedFallbackSubtagParameterOptions<Type> = RepeatedSubtagParameterOptions<Type> & SubtagFallbackParameterOptions<Type>;
 
-type OptionalSubtagParameterOptions<Type> = SubtagParameterOptions<Type> & {
-    readonly ifOmitted: Type;
+type OptionalValueType = JValue | undefined;
+
+type OptionalSubtagParameterOptions<Type, Default extends OptionalValueType> = SubtagParameterOptions<Type> & {
+    readonly ifOmitted: Default;
 }
 
-type OptionalFallbackSubtagParameterOptions<Type> = OptionalSubtagParameterOptions<Type> & SubtagFallbackParameterOptions<Type>;
+type OptionalFallbackSubtagParameterOptions<Type, Default extends OptionalValueType> = OptionalSubtagParameterOptions<Type, Default> & SubtagFallbackParameterOptions<Type>;
 
 type AnySubtagParameterOptions<T> =
     | SubtagParameterOptions<T>
     | SubtagFallbackParameterOptions<T>
     | RepeatedSubtagParameterOptions<T>
     | RepeatedFallbackSubtagParameterOptions<T>
-    | OptionalSubtagParameterOptions<T>
-    | OptionalFallbackSubtagParameterOptions<T>
+    | OptionalSubtagParameterOptions<T, OptionalValueType>
+    | OptionalFallbackSubtagParameterOptions<T, OptionalValueType>;
 
 interface SubtagParameterDescriptor<T = unknown> {
     readonly minArgs: number;
@@ -277,7 +289,7 @@ interface SubtagParameterDescriptor<T = unknown> {
 
     /**
      * Marks this parameter as not needing to be sent to the implementation.
-     * Generally this is just used for "swich" type arguments, used for looking up other values like roles/users/channels
+     * Generally this is just used for the quiet argument, or "swich" type arguments used for looking up other values like roles/users/channels
      */
     noEmit(): this & NoEmitSubtagParameterDescriptor;
 }

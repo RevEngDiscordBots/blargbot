@@ -239,7 +239,7 @@ export class BBTagContext implements Required<BBTagContextOptions> {
         return this.locks[key] ??= new ReadWriteLock();
     }
 
-    private async _sendOutput(text: string): Promise<string | undefined> {
+    private async _sendOutput(text?: string): Promise<string | undefined> {
         let disableEveryone = true;
         if (this.isCC) {
             disableEveryone = await this.engine.database.guilds.getSetting(this.guild.id, 'disableeveryone') ?? false;
@@ -267,7 +267,7 @@ export class BBTagContext implements Required<BBTagContextOptions> {
                 this.state.ownedMsgs.push(response.id);
                 return response.id;
             }
-            throw new Error(`Failed to send: ${text}`);
+            throw new Error(`Failed to send: ${text ?? ''}`);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 if (err.message !== 'No content') {
@@ -275,12 +275,12 @@ export class BBTagContext implements Required<BBTagContextOptions> {
                 }
                 return undefined;
             }
-            this.logger.error(`Failed to send: ${text}`, err);
-            throw new Error(`Failed to send: ${text}`);
+            this.logger.error(`Failed to send: ${text ?? ''}`, err);
+            throw new Error(`Failed to send: ${text ?? ''}`);
         }
     }
 
-    public async sendOutput(text: string): Promise<string | undefined> {
+    public async sendOutput(text?: string): Promise<string | undefined> {
         if (this.silent)
             return await this.state.outputMessage;
         return await (this.state.outputMessage ??= this._sendOutput(text));

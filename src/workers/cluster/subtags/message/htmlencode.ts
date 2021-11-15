@@ -6,21 +6,18 @@ export class HtmlDecodeSubtag extends Subtag {
     public constructor() {
         super({
             name: 'htmlencode',
-            category: SubtagType.MESSAGE,
-            definition: [
-                {
-                    parameters: ['text+'],
-                    description: 'Encodes `text` with escaped html entities.',
-                    exampleCode: '{htmlencode;<hello, world>}',
-                    exampleOut: '&lt;hello, world&gt;',
-                    returns: 'string',
-                    execute: (_, text) => this.htmlEncode(text.map(arg => arg.value).join(';')) // TODO: use subtag.source
-                }
-            ]
+            category: SubtagType.MESSAGE
         });
     }
 
-    public htmlEncode(html: string): string {
-        return encode(html);
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string', { repeat: [1, Infinity] })
+    ], {
+        description: 'Encodes `text` with escaped html entities.',
+        exampleCode: '{htmlencode;<hello, world>}',
+        exampleOut: '&lt;hello, world&gt;'
+    })
+    public htmlEncode(html: string[]): string {
+        return encode(html.join(';'));
     }
 }

@@ -6,20 +6,17 @@ export class ReactionSubtag extends Subtag {
     public constructor() {
         super({
             name: 'reaction',
-            category: SubtagType.MESSAGE,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Gets the reaction that triggered {waitreact}',
-                    exampleCode: '{waitreact;11111111111111111;{bool;{reaction};==;✅}}',
-                    exampleOut: '["111111111111111","12345678912345","3333333333333","✅"]',
-                    returns: 'string',
-                    execute: (ctx) => this.getReaction(ctx)
-                }
-            ]
+            category: SubtagType.MESSAGE
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.context()
+    ], {
+        description: 'Gets the reaction that triggered {waitreact}',
+        exampleCode: '{waitreact;11111111111111111;{bool;{reaction};==;✅}}',
+        exampleOut: '["111111111111111","12345678912345","3333333333333","✅"]'
+    })
     public getReaction(context: BBTagContext): string {
         const val = context.scopes.local.reaction;
         if (val === undefined)

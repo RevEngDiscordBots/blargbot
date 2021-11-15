@@ -226,7 +226,7 @@ function subtagDocs(context: CommandContext, subtag: Subtag): MessageEmbedOption
     if (limitField.value.length > 0)
         fields.push(limitField);
 
-    return subtag.enrichDocs({
+    return {
         title: ` - {${subtag.name}}`,
         url: `/#${encodeURIComponent(subtag.name)}`,
         description: description.length === 0 ? undefined : description.join('\n'),
@@ -235,7 +235,7 @@ function subtagDocs(context: CommandContext, subtag: Subtag): MessageEmbedOption
         footer: {
             text: `For detailed info about the argument syntax, use: ${context.prefix}${context.commandName} docs arguments`
         }
-    });
+    };
 }
 async function lookupSubtag(context: CommandContext, input: string): Promise<Subtag | string | undefined> {
     input = input.replace(/[{}]/, '').toLowerCase();

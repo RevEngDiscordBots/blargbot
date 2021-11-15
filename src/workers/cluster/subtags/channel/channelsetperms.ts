@@ -57,8 +57,8 @@ export class ChannelSetPermsSubtag extends Subtag {
         Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
         Subtag.argument('type', 'string', { guard: v => v === 'role', customError: 'Type must be member or role' }).noEmit(), //TODO Make this be type restricted to 'role'
         Subtag.argument('role', 'role'),
-        Subtag.argument('allow', 'bigint'),
-        Subtag.argument('deny', 'bigint', { ifOmitted: 0n })
+        Subtag.argument('allow', 'bigint', { ifOmitted: undefined }),
+        Subtag.argument('deny', 'bigint', { ifOmitted: undefined })
     ], {
         description: 'Sets the permissions of a `role` in `channel`\n' +
             '`type` is must be `role`\n' +
@@ -72,8 +72,8 @@ export class ChannelSetPermsSubtag extends Subtag {
         Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
         Subtag.argument('type', 'string', { guard: v => v === 'member', customError: 'Type must be member or role' }).noEmit(), //TODO Make this be type restricted to 'member'
         Subtag.argument('user', 'user'),
-        Subtag.argument('allow', 'bigint', { ifOmitted: 0n }),
-        Subtag.argument('deny', 'bigint', { ifOmitted: 0n })
+        Subtag.argument('allow', 'bigint', { ifOmitted: undefined }),
+        Subtag.argument('deny', 'bigint', { ifOmitted: undefined })
     ], {
         description: 'Sets the permissions of a `user` in `channel`\n' +
             '`type` is must be `member`\n' +
@@ -82,7 +82,7 @@ export class ChannelSetPermsSubtag extends Subtag {
         exampleCode: '{channelsetperms;11111111111111111;member;Some user;1024;2048}',
         exampleOut: '11111111111111111'
     })
-    public async channelSetPerms(context: BBTagContext, channel: GuildChannels, entity: Role | GuildMember | User, allow: bigint, deny: bigint): Promise<string> {
+    public async channelSetPerms(context: BBTagContext, channel: GuildChannels, entity: Role | GuildMember | User, allow?: bigint, deny?: bigint): Promise<string> {
         if (guard.isThreadChannel(channel))
             throw new BBTagRuntimeError('Cannot set permissions for a thread channel');
 

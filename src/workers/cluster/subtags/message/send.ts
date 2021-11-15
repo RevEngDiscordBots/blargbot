@@ -1,49 +1,64 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { BBTagRuntimeError, ChannelNotFoundError } from '@cluster/bbtag/errors';
-import { guard, parse, SubtagType } from '@cluster/utils';
-import { MalformedEmbed } from '@core/types';
-import { FileOptions, MessageEmbedOptions } from 'discord.js';
+import { guard, SubtagType } from '@cluster/utils';
+import { GuildChannels, MessageEmbedOptions } from 'discord.js';
 
 export class SendSubtag extends Subtag {
     public constructor() {
         super({
             name: 'send',
             category: SubtagType.MESSAGE,
-            desc: 'If `embed` is an array, multiple embeds will be added to the message payload.',
-            definition: [
-                {
-                    parameters: ['channel', 'message', 'embed', 'fileContent', 'fileName?:file.txt'],
-                    description: 'Sends `message` and `embed` to `channel` with an attachment, and returns the message id. `channel` is either an id or channel mention. '
-                        + 'If `fileContent` starts with `buffer:` then the following text will be parsed as base64 to a raw buffer.\n'
-                        + '**Note:** `embed` is the JSON for an embed, don\'t put the `{embed}` subtag there, as nothing will show',
-                    returns: 'id',
-                    execute: (ctx, [channel, message, embed, fileContent, fileName]) => this.send(ctx, channel.value, message.value, parse.embed(embed.value), { attachment: fileContent.value, name: fileName.value })
-                },
-                {
-                    parameters: ['channel', 'message', 'embed'],
-                    description: 'Sends `message` and `embed` to `channel`, and returns the message id. `channel` is either an id or channel mention.\n'
-                        + '**Note:** `embed` is the JSON for an embed, don\'t put the `{embed}` subtag there, as nothing will show',
-                    returns: 'id',
-                    execute: (ctx, [channel, message, embed]) => this.send(ctx, channel.value, message.value, parse.embed(embed.value))
-                },
-                {
-                    parameters: ['channel', 'content'],
-                    description: 'Sends `content` to `channel`, and returns the message id. `channel` is either an id or channel mention.\n'
-                        + '**Note:** `content` is the text to send or the JSON for an embed, don\'t put the `{embed}` subtag there, as nothing will show',
-                    returns: 'id',
-                    execute: (ctx, [channel, content]) => this.send(ctx, channel.value, ...resolveContent(content.value))
-                }
-            ]
+            desc: 'If `embed` is an array, multiple embeds will be added to the message payload.'
         });
     }
 
-    public async send(context: BBTagContext, channelId: string, message?: string, embed?: MessageEmbedOptions[] | MalformedEmbed[], file?: FileOptions): Promise<string> {
-        const channel = await context.queryChannel(channelId, { noLookup: true });
-        if (channel === undefined || !guard.isTextableChannel(channel))
-            throw new ChannelNotFoundError(channelId);
+    @Subtag.signature('snowflake', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { guard: guard.isTextableChannel }),
+        Subtag.useValue(undefined),
+        Subtag.argument('embed', 'embed[]'),
+        Subtag.useValue(undefined),
+        Subtag.useValue(undefined)
+    ], {
+        description: 'Sends a message containing `embed` to `channel`, and returns the message id.\n' +
+            '**Note:** `embed` is the JSON for an embed, don\'t put the `{embed}` subtag there, as nothing will show',
+        exampleCode: '{send;#support;{j;{"title": "This is my embed!" }}}',
+        exampleOut: '12345678901212'
+    })
+    @Subtag.signature('snowflake', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { guard: guard.isTextableChannel }),
+        Subtag.argument('message', 'string'),
+        Subtag.argument('embed', 'embed[]', { ifOmitted: undefined, allowMalformed: true }),
+        Subtag.useValue(undefined),
+        Subtag.useValue(undefined)
+    ], {
+        description: 'Sends a message containing `message` and `embed` to `channel`, and returns the message id.\n' +
+            '**Note:** `embed` is the JSON for an embed, don\'t put the `{embed}` subtag there, as nothing will show',
+        exampleCode: '{send;#support;Hello world!;{j;{"title": "This is my embed!" }}}',
+        exampleOut: '12345678901212'
+    })
+    @Subtag.signature('snowflake', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { guard: guard.isTextableChannel }),
+        Subtag.argument('message', 'string'),
+        Subtag.argument('embed', 'embed[]', { ifOmitted: undefined, allowMalformed: true }),
+        Subtag.argument('fileContent', 'string'),
+        Subtag.argument('fileName', 'string', { ifOmitted: undefined })
+    ], {
+        description: 'Sends a message containing `message` and `embed` to `channel` with an attachment, and returns the message id.\n' +
+            'If `fileContent` starts with `buffer:` then the following text will be parsed as base64 to a raw buffer.\n' +
+            '**Note:** `embed` is the JSON for an embed, don\'t put the `{embed}` subtag there, as nothing will show',
+        exampleCode: '{send;#support;Hello world!;{j;{"title": "This is my embed!" }};This is a text file!;myFile.txt}',
+        exampleOut: '12345678901212'
+    })
+    public async send(context: BBTagContext, channel: GuildChannels, message?: string, embed?: MessageEmbedOptions[], fileContent?: string, fileName?: string): Promise<string> {
+        if (!guard.isTextableChannel(channel))
+            throw new ChannelNotFoundError(channel.id);
 
-        if (typeof file?.attachment === 'string' && file.attachment.startsWith('buffer:'))
-            file.attachment = Buffer.from(file.attachment.slice(7), 'base64');
+        const fileData = typeof fileContent === 'string' && fileContent.startsWith('buffer:')
+            ? Buffer.from(fileContent.slice(7), 'base64')
+            : fileContent;
 
         const disableEveryone = !context.isCC
             || (await context.database.guilds.getSetting(channel.guild.id, 'disableeveryone')
@@ -59,7 +74,9 @@ export class SendSubtag extends Subtag {
                     roles: context.isCC ? context.state.allowedMentions.roles : undefined,
                     users: context.isCC ? context.state.allowedMentions.users : undefined
                 },
-                files: file !== undefined ? [file] : undefined
+                files: fileData === undefined ? undefined : [
+                    { attachment: fileData, name: fileName }
+                ]
             });
 
             if (sent === undefined)
@@ -75,11 +92,4 @@ export class SendSubtag extends Subtag {
         }
 
     }
-}
-
-function resolveContent(content: string): [string | undefined, MessageEmbedOptions[] | undefined] {
-    const embeds = parse.embed(content);
-    if (embeds === undefined || 'malformed' in embeds[0])
-        return [content, undefined];
-    return [undefined, embeds];
 }

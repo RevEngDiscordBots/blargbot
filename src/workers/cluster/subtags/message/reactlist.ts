@@ -1,133 +1,85 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, MessageNotFoundError } from '@cluster/bbtag/errors';
-import { parse, SubtagType } from '@cluster/utils';
-import { Message, MessageEmbedOptions } from 'discord.js';
+import { MessageNotFoundError } from '@cluster/bbtag/errors';
+import { SubtagType } from '@cluster/utils';
+import { EmojiIdentifierResolvable, GuildChannels } from 'discord.js';
 
 export class ReactListSubtag extends Subtag {
     public constructor() {
         super({
             name: 'reactlist',
-            category: SubtagType.MESSAGE,
             aliases: ['listreact'],
-            definition: [//! overwritten
-                {
-                    parameters: [],
-                    description: 'This just returns `No message found` ***always*** for the sake of backwards compatibility.',
-                    returns: 'error',
-                    execute: (ctx) => { throw new MessageNotFoundError(ctx.channel, ''); }
-                },
-                {
-                    parameters: ['messageid'],
-                    description: 'Returns an array of reactions on `messageid`.',
-                    returns: 'string[]',
-                    execute: (ctx, [messageid]) => this.getReactions(ctx, messageid.value)
-                },
-                {
-                    parameters: ['channelid|messageid', 'messageid|reactions'],
-                    description: 'Either returns an array of users who reacted with `reactions` on `messageid`, or returns an array of reactions on `messageid` in `channelid`',
-                    returns: 'string[]',
-                    execute: (ctx, args) => this.getReactionsOrReactors(ctx, args.map(arg => arg.value))
-                },
-                {
-                    parameters: ['channelid|message', 'messageid|reactions', 'reactions+'],
-                    description: 'Either returns an array of users who reacted with `reactions` on `messageid` in `channelid`, or returns an array of users who reacted `reactions` on `messageid`.',
-                    returns: 'string[]',
-                    execute: (ctx, args) => this.getReactionsOrReactors(ctx, args.map(arg => arg.value))
-                }
-            ]
+            category: SubtagType.MESSAGE
         });
     }
 
-    public async getReactionsOrReactors(
-        context: BBTagContext,
-        args: string[]
-    ): Promise<Iterable<string>> {
-        let channel;
-        let message: Message | undefined;
+    @Subtag.signature('error', [Subtag.context()], { hidden: true })
+    public rememberKidsIfYouWriteBuggyCodeItCanLastALifetime(context: BBTagContext): never {
+        throw new MessageNotFoundError(context.channel, '');
+    }
 
-        // Check if the first "emote" is actually a valid channel
-        channel = await context.queryChannel(args[0], { noLookup: true });
-        if (channel === undefined)
-            channel = context.channel;
-        else
-            args.shift();
-
-        // Check that the current first "emote" is a message id
-        try {
-            message = await context.util.getMessage(channel.id, args[0]);
-        } catch (e: unknown) {
-            // NOOP
-        }
+    @Subtag.signature('string[]', [
+        Subtag.context(),
+        Subtag.context(ctx => ctx.channel),
+        Subtag.argument('messageId', 'snowflake')
+    ], {
+        description: 'Returns an array of reactions on `messageId` in the current channel.',
+        exampleCode: '{reactlist;111111111111111111}',
+        exampleOut: '["🤔", "👀"]'
+    })
+    @Subtag.signature('string[]', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { noLookup: true }),
+        Subtag.argument('messageId', 'snowflake')
+    ], {
+        description: 'Returns an array of reactions on `messageId` in `channel`.',
+        exampleCode: '{reactlist;222222222222222222;111111111111111111}',
+        exampleOut: '["🤔", "👀"]'
+    })
+    public async getReactions(context: BBTagContext, channel: GuildChannels, messageId: string): Promise<string[]> {
+        const message = await context.util.getMessage(channel, messageId);
         if (message === undefined)
-            throw new MessageNotFoundError(channel, args[0]);
-        args.shift();
+            throw new MessageNotFoundError(channel, messageId);
 
-        // Find all actual emotes in remaining emotes
-        const parsedEmojis = parse.emoji(args.join('|'), true);
+        return message.reactions.cache.map(r => r.emoji.toString());
+    }
 
-        if (parsedEmojis.length === 0 && args.length > 0)
-            throw new BBTagRuntimeError('Invalid Emojis');
+    @Subtag.signature('string[]', [
+        Subtag.context(),
+        Subtag.context(ctx => ctx.channel),
+        Subtag.argument('messageId', 'snowflake'),
+        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+    ], {
+        description: 'Returns an array of users who reacted `reactions` on `messageId` in the current channel. A user only needs to react to one reaction to be included in the resulting array.',
+        exampleCode: '{reactlist;111111111111111111;🤔;👀}',
+        exampleOut: '["278237925009784832", "134133271750639616"]'
+    })
+    @Subtag.signature('string[]', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel', { noLookup: true }),
+        Subtag.argument('messageId', 'snowflake'),
+        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+    ], {
+        description: 'Returns an array of users who reacted `reactions` on `messageId` in `channel`. A user only needs to react to one reaction to be included in the resulting array.',
+        exampleCode: '{reactlist;222222222222222222;111111111111111111;🤔;👀}',
+        exampleOut: '["278237925009784832", "134133271750639616"]'
+    })
+    public async getReactors(context: BBTagContext, channel: GuildChannels, messageId: string, emojis: EmojiIdentifierResolvable[]): Promise<string[]> {
+        const message = await context.util.getMessage(channel, messageId);
+        if (message === undefined)
+            throw new MessageNotFoundError(channel, messageId);
 
-        // Default to listing what emotes there are
-        if (parsedEmojis.length === 0)
-            return message.reactions.cache.map(r => r.emoji.toString());
-
-        // List all users per reaction
-        const users: string[] = [];
-        const errors = [];
-        for (let emote of parsedEmojis) {
-            emote = emote.replace(/^a?:/gi, '');
-            if (!message.reactions.cache.has(emote)) {
+        const result = new Set<string>();
+        for (const emoji of emojis) {
+            const emojiStr = emoji.toString();
+            const reaction = message.reactions.cache.get(emojiStr) ?? message.reactions.cache.get(emojiStr.replace(/^a?:/i, ''));
+            if (reaction === undefined)
                 continue;
-            }
-            try {
-                const reactionUsers = await message.reactions.cache.get(emote)?.users.fetch();
-                if (reactionUsers !== undefined)
-                    users.push(...reactionUsers.keys());
-            } catch (err: unknown) {
-                if (err instanceof Error)
-                    if (err.message === 'Unknown Emoji')
-                        errors.push(emote);
-                    else
-                        throw err;
-            }
+
+            //TODO: Try/catch needed?
+            const users = await reaction.users.fetch();
+            for (const user of users.keys())
+                result.add(user);
         }
-
-        if (errors.length > 0)
-            throw new BBTagRuntimeError('Unknown Emoji: ' + errors.join(', '));
-        return [...new Set(users)];
-    }
-
-    public async getReactions(context: BBTagContext, messageId: string): Promise<string[]> {
-        const msg = await context.util.getMessage(context.channel, messageId, true);
-        if (msg === undefined)
-            throw new MessageNotFoundError(context.channel, messageId);
-        return msg.reactions.cache.map(r => r.emoji.toString());
-    }
-
-    public enrichDocs(embed: MessageEmbedOptions): MessageEmbedOptions {
-        embed.fields = [
-            {
-                name: 'Usage',
-                value: '```\n{reactlist}```This just returns `No message found` ***always*** for the sake of backwards compatibility.\n\n' +
-                    '**Example code:**\n> {reactlist}\n**Example out:**\n> `No message found`'
-            },
-            {
-                name: '\u200b',
-                value: '```\n{reactlist;[channelID];<messageID>}```\n`channelID` defaults to the current channel\n\n' +
-                    'Returns an array of reactions on `messageid` in `channelID`.\n\n' +
-                    '**Example code:**\n> {reactlist;111111111111111111}\n' +
-                    '**Example out:**\n> ["🤔", "👀"]'
-            },
-            {
-                name: '\u200b',
-                value: '```\n{reactlist;[channelID];<messageID>;<reactions...>}```\n`channelID` defaults to the current channel\n\n' +
-                    'Returns an array of users who reacted `reactions` on `messageID` in `channelID`. A user only needs to react to one reaction to be included in the resulting array.\n\n' +
-                    '**Example code:**\n> {reactlist;111111111111111111;🤔;👀}\n> {reactlist;222222222222222222;111111111111111111;👀}\n' +
-                    '**Example out:**\n> ["278237925009784832", "134133271750639616"]\n> ["134133271750639616"]'
-            }
-        ];
-
-        return embed;
+        return [...result];
     }
 }

@@ -1,32 +1,25 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { parse, SubtagType } from '@cluster/utils';
+import { SubtagType } from '@cluster/utils';
 
 export class EveryoneMentionSubtag extends Subtag {
     public constructor() {
         super({
             name: 'everyonemention',
             aliases: ['everyone'],
-            category: SubtagType.MESSAGE,
-            definition: [
-                {
-                    parameters: ['mention?'],
-                    description: 'Returns the mention of `@everyone`.\nThis requires the `disableeveryone` setting to be false. If `mention` is set to `true`, `@everyone` will ping, else it will be silent.',
-                    exampleCode: '{everyonemention}',
-                    exampleOut: '@everyone',
-                    returns: 'string',
-                    execute: (ctx, [mention]) => this.everyoneMention(ctx, mention.value)
-                }
-            ]
+            category: SubtagType.MESSAGE
         });
     }
 
-    public everyoneMention(
-        context: BBTagContext,
-        mention: string
-    ): string {
-        const enabled = parse.boolean(mention, true);
-        context.state.allowedMentions.everybody = enabled;
-
+    @Subtag.signature('string', [
+        Subtag.context(),
+        Subtag.argument('mention', 'boolean', { ifOmitted: true, ifInvalid: true })
+    ], {
+        description: 'Returns the mention of `@everyone`.\nThis requires the `disableeveryone` setting to be false. If `mention` is set to `true`, `@everyone` will ping, else it will be silent.',
+        exampleCode: '{everyonemention}',
+        exampleOut: '@everyone'
+    })
+    public everyoneMention(context: BBTagContext, shouldMention: boolean): string {
+        context.state.allowedMentions.everybody = shouldMention;
         return '@everyone';
     }
 }

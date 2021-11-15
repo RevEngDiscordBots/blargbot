@@ -1,53 +1,47 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, ChannelNotFoundError, MessageNotFoundError } from '@cluster/bbtag/errors';
+import { BBTagRuntimeError, MessageNotFoundError } from '@cluster/bbtag/errors';
 import { guard, SubtagType } from '@cluster/utils';
+import { GuildChannels } from 'discord.js';
 
 export class DeleteSubtag extends Subtag {
     public constructor() {
         super({
             name: 'delete',
             desc: 'Only ccommands can delete other messages.',
-            category: SubtagType.MESSAGE,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Deletes the message that invoked the command',
-                    exampleIn: '{//;The message that triggered this will be deleted} {delete}',
-                    exampleOut: '(the message got deleted idk how to do examples for this)',
-                    returns: 'nothing',
-                    execute: (ctx) => this.deleteMessage(ctx, ctx.channel.id, ctx.message.id)
-                },
-                {
-                    parameters: ['messageId'],
-                    description: 'Deletes the specified `messageId` from the current channel.',
-                    exampleIn: '{//;The message with ID `111111111111111111` will be deleted}\n{delete;111111111111111111}',
-                    exampleOut: '(the message `111111111111111111` got deleted idk how to do examples for this)',
-                    returns: 'nothing',
-                    execute: (ctx, [messageId]) => this.deleteMessage(ctx, ctx.channel.id, messageId.value)
-                },
-                {
-                    parameters: ['channel', 'messageId'],
-                    description: 'Deletes the specified `messageId` from channel `channel`.',
-                    exampleIn: '{//;The message with ID `2222222222222222` from channel `1111111111111111` will be deleted}\n{delete;111111111111111111;2222222222222222}',
-                    exampleOut: '(the message `2222222222222222` from channel `1111111111111111` got deleted)',
-                    returns: 'nothing',
-                    execute: (ctx, [channel, messageId]) => this.deleteMessage(ctx, channel.value, messageId.value)
-                }
-            ]
+            category: SubtagType.MESSAGE
         });
     }
 
-    public async deleteMessage(
-        context: BBTagContext,
-        channelStr: string,
-        messageId: string
-    ): Promise<void> {
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.context(ctx => ctx.channel),
+        Subtag.context(ctx => ctx.message.id)
+    ], {
+        description: 'Deletes the message that invoked the command',
+        exampleIn: '{//;The message that triggered this will be deleted} {delete}',
+        exampleOut: '(the message got deleted idk how to do examples for this)'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.context(ctx => ctx.channel),
+        Subtag.argument('messageId', 'snowflake')
+    ], {
+        description: 'Deletes the specified `messageId` from the current channel.',
+        exampleIn: '{//;The message with ID `111111111111111111` will be deleted}\n{delete;111111111111111111}',
+        exampleOut: '(the message `111111111111111111` got deleted idk how to do examples for this)'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel'),
+        Subtag.argument('messageId', 'snowflake')
+    ], {
+        description: 'Deletes the specified `messageId` from channel `channel`.',
+        exampleIn: '{//;The message with ID `2222222222222222` from channel `1111111111111111` will be deleted}\n{delete;111111111111111111;2222222222222222}',
+        exampleOut: '(the message `2222222222222222` from channel `1111111111111111` got deleted)'
+    })
+    public async deleteMessage(context: BBTagContext, channel: GuildChannels, messageId: string): Promise<void> {
         if (!(await context.isStaff || context.ownsMessage(messageId)))
             throw new BBTagRuntimeError('Author must be staff to delete unrelated messages');
-
-        const channel = await context.queryChannel(channelStr);
-        if (channel === undefined)
-            throw new ChannelNotFoundError(channelStr);
 
         if (messageId.length === 0 || !guard.isTextableChannel(channel))
             throw new MessageNotFoundError(channel, messageId);

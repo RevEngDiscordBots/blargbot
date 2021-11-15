@@ -3,58 +3,6 @@ import { BBTagRuntimeError } from '@cluster/bbtag/errors';
 import { discordUtil, guard, parse, SubtagType } from '@cluster/utils';
 import { EmbedFieldData, MessageEmbedOptions } from 'discord.js';
 
-const fields = [
-    {
-        key: 'title'
-    },
-    {
-        key: 'description'
-    },
-    {
-        key: 'url'
-    },
-    {
-        key: 'color',
-        desc: 'can be a [HTML color](https://www.w3schools.com/colors/colors_names.asp), hex, (r,g,b) or a valid color number.'
-    },
-    {
-        key: 'timestamp'
-    },
-    {
-        key: 'footer.icon_url'
-    },
-    {
-        key: 'footer.text'
-    },
-    {
-        key: 'thumbnail.url'
-    },
-    {
-        key: 'image.url'
-    },
-    {
-        key: 'author.name'
-    },
-    {
-        key: 'author.url'
-    },
-    {
-        key: 'author.icon_url'
-    },
-    {
-        key: 'fields.name',
-        desc: 'Must have `fields.value` after. Cannot be empty.'
-    },
-    {
-        key: 'fields.value',
-        desc: 'Must come after a `fields.name`. Cannot be empty'
-    },
-    {
-        key: 'fields.inline',
-        desc: 'Must come after a `fields.name`'
-    }
-];
-
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 // custom message for fields missing values/names
 type EmbedBuildOptions = Overwrite<MessageEmbedOptions, { fields?: Array<Partial<EmbedFieldData>>; }>
@@ -63,29 +11,26 @@ export class EmbedBuildSubag extends Subtag {
     public constructor() {
         super({
             name: 'embedbuild',
-            category: SubtagType.MESSAGE,
             aliases: ['buildembed'],
+            category: SubtagType.MESSAGE,
             desc: 'This tag is designed to allow you to generate embed code for `{webhook}` and `{embed}` with much less effort.\n' +
                 'This tag uses a key/value system, with each entry in `values` looking like `key:value`.\n\n' +
                 'Valid keys are:\n' + fields.map(k => '`' + k.key + '`' + (k.desc === undefined ? '' : ' - ' + k.desc)).join('\n') + '\n\n' +
                 'You can find information about embeds [here (embed structure)](https://discordapp.com/developers/docs/resources/channel#embed-object) ' +
                 'and [here (embed limits)](https://discordapp.com/developers/docs/resources/channel#embed-limits) as well as a useful tool for testing embeds ' +
-                '[here](https://leovoel.github.io/embed-visualizer/)',
-            definition: [
-                {
-                    parameters: ['values+'],
-                    exampleCode: '{embedbuild;\n  title:hello!;\n  description:I am an example embed;\n  fields.name:Field 1;\n  fields.value:This is the first field!;\n  ' +
-                        'fields.name:Field 2;\n  fields.value:This is the next field and is inline!;\n  fields.inline:true\n}',
-                    exampleOut: '{"title":"hello!","description":"I am an example embed","fields":[' +
-                        '{"name":"Field 1","value":"This is the first field!"},' +
-                        '{"name":"Field 2","value":"This is the next field and is inline!","inline":true}]}',
-                    returns: 'json',
-                    execute: (_, args) => this.buildEmbed(args.map(arg => arg.value))
-                }
-            ]
+                '[here](https://leovoel.github.io/embed-visualizer/)'
         });
     }
 
+    @Subtag.signature('json', [
+        Subtag.argument('values', 'string', { repeat: [1, Infinity] })
+    ], {
+        exampleCode: '{embedbuild;\n  title:hello!;\n  description:I am an example embed;\n  fields.name:Field 1;\n  fields.value:This is the first field!;\n  ' +
+            'fields.name:Field 2;\n  fields.value:This is the next field and is inline!;\n  fields.inline:true\n}',
+        exampleOut: '{"title":"hello!","description":"I am an example embed","fields":[' +
+            '{"name":"Field 1","value":"This is the first field!"},' +
+            '{"name":"Field 2","value":"This is the next field and is inline!","inline":true}]}'
+    })
     public buildEmbed(args: string[]): JObject {
         const embed: EmbedBuildOptions = {};
 
@@ -219,3 +164,21 @@ export class EmbedBuildSubag extends Subtag {
 
     }
 }
+
+const fields = [
+    { key: 'title' },
+    { key: 'description' },
+    { key: 'url' },
+    { key: 'color', desc: 'can be a [HTML color](https://www.w3schools.com/colors/colors_names.asp), hex, (r,g,b) or a valid color number.' },
+    { key: 'timestamp' },
+    { key: 'footer.icon_url' },
+    { key: 'footer.text' },
+    { key: 'thumbnail.url' },
+    { key: 'image.url' },
+    { key: 'author.name' },
+    { key: 'author.url' },
+    { key: 'author.icon_url' },
+    { key: 'fields.name', desc: 'Must have `fields.value` after. Cannot be empty.' },
+    { key: 'fields.value', desc: 'Must come after a `fields.name`. Cannot be empty' },
+    { key: 'fields.inline', desc: 'Must come after a `fields.name`' }
+];

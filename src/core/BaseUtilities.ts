@@ -1,6 +1,6 @@
 import { DMContext, SendContext, SendPayload, StoredUser } from '@core/types';
 import { Snowflake } from 'catflake';
-import { AnyChannel, ChannelInteraction, Client as Discord, ClientUser, Constants, DiscordAPIError, EmojiIdentifierResolvable, Guild, GuildChannels, GuildMember, KnownChannel, Message, MessageEmbedAuthor, MessageEmbedOptions, MessageOptions, MessageReaction, Role, Team, TextBasedChannels, User, UserChannelInteraction, Webhook } from 'discord.js';
+import { AnyChannel, ChannelInteraction, Client as Discord, ClientUser, Constants, DiscordAPIError, EmojiIdentifierResolvable, Guild, GuildChannels, GuildMember, GuildMessage, KnownChannel, Message, MessageEmbedAuthor, MessageEmbedOptions, MessageOptions, MessageReaction, Role, Team, TextBasedChannels, User, UserChannelInteraction, Webhook } from 'discord.js';
 import moment from 'moment';
 
 import { BaseClient } from './BaseClient';
@@ -476,6 +476,8 @@ export class BaseUtilities {
         }
     }
 
+    public async getMessage(channel: string | GuildChannels, messageId: string, force?: boolean): Promise<GuildMessage | undefined>;
+    public async getMessage(channel: string | KnownChannel, messageId: string, force?: boolean): Promise<Message | undefined>;
     public async getMessage(channel: string | KnownChannel, messageId: string, force?: boolean): Promise<Message | undefined> {
         messageId = parse.entityId(messageId) ?? '';
         if (messageId === '')
