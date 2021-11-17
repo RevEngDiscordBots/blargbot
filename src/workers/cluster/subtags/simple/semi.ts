@@ -5,20 +5,15 @@ export class SemiSubtag extends Subtag {
     public constructor() {
         super({
             name: 'semi',
-            category: SubtagType.SIMPLE,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns `;`',
-                    exampleCode: 'This is a semicolon! {semi}',
-                    exampleOut: 'This is a semicolon! ;',
-                    returns: 'string',
-                    execute: () => this.getSemiColon()
-                }
-            ]
+            category: SubtagType.SIMPLE
         });
     }
 
+    @Subtag.signature('string', [], {
+        description: 'Returns `;`',
+        exampleCode: 'This is a semicolon! {semi}',
+        exampleOut: 'This is a semicolon! ;'
+    })
     public getSemiColon(): ';' {
         return ';';
     }

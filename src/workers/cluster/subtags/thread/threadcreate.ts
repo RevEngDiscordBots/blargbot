@@ -1,56 +1,39 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, ChannelNotFoundError, InvalidChannelError, MessageNotFoundError } from '@cluster/bbtag/errors';
+import { BBTagRuntimeError, InvalidChannelError, MessageNotFoundError } from '@cluster/bbtag/errors';
 import { bbtagUtil, guard, mapping, parse, SubtagType } from '@cluster/utils';
-import { GuildMessage } from 'discord.js';
-
-const threadOptions = mapping.object({
-    name: mapping.string,
-    autoArchiveDuration: mapping.choice(
-        mapping.in(undefined),
-        mapping.string,
-        mapping.number
-    ),
-    private: mapping.choice(
-        mapping.in(undefined),
-        mapping.string,
-        mapping.boolean
-    )
-});
+import { GuildChannels, GuildMessage } from 'discord.js';
 
 export class ThreadCreateSubtag extends Subtag {
     public constructor() {
         super({
             name: 'threadcreate',
-            category: SubtagType.THREAD,
             aliases: ['createthread'],
-            definition: [
-                {
-                    parameters: ['channel', 'message?', 'options'],
-                    description: '`channel` defaults to the current channel\n\nCreates a new thread in `channel`. If `message` is provided, thread will start from `message`.\n`options` must be a JSON object containing `name`, other properties are:\n- `autoArchiveDuration` (one of `60, 1440, 4320, 10080`)\n- `private` (boolean)\nThe guild must have the required boosts for durations `4320` and `10080`. If `private` is true thread will be private (unless in a news channel).\nReturns the ID of the new thread channel',
-                    exampleCode: '{threadcreate;;123456789123456;{json;{"name" : "Hello world!"}}}',
-                    exampleOut: '98765432198765',
-                    returns: 'id',
-                    execute: (ctx, [channel, message, options]) => this.createThread(ctx, channel.value, message.value, options.value)
-                }
-            ]
+            category: SubtagType.THREAD
         });
     }
 
-    public async createThread(context: BBTagContext, channelStr: string, messageStr: string, optionsStr: string): Promise<string> {
-        const channel = channelStr === '' ? context.channel : await context.queryChannel(channelStr);
-        if (channel === undefined)
-            throw new ChannelNotFoundError(channelStr);
+    @Subtag.signature('snowflake', [
+        Subtag.context(),
+        Subtag.argument('channel', 'channel').ifOmittedUse('{channelid}'),
+        Subtag.argument('messageId', 'snowflake').allowOmitted(),
+        Subtag.argument('options', 'string')
+    ], {
+        description: '`channel` defaults to the current channel\n\nCreates a new thread in `channel`. If `message` is provided, thread will start from `message`.\n`options` must be a JSON object containing `name`, other properties are:\n- `autoArchiveDuration` (one of `60, 1440, 4320, 10080`)\n- `private` (boolean)\nThe guild must have the required boosts for durations `4320` and `10080`. If `private` is true thread will be private (unless in a news channel).\nReturns the ID of the new thread channel',
+        exampleCode: '{threadcreate;;123456789123456;{json;{"name" : "Hello world!"}}}',
+        exampleOut: '98765432198765'
+    })
+    public async createThread(context: BBTagContext, channel: GuildChannels, messageId: string | undefined, optionsStr: string): Promise<string> {
         if (!guard.isThreadableChannel(channel))
             throw new InvalidChannelError(channel);
 
         let message: GuildMessage | undefined;
-        if (messageStr !== '') {
-            message = await context.util.getMessage(channel, messageStr);
+        if (messageId !== undefined) {
+            message = await context.util.getMessage(channel, messageId);
             if (message === undefined)
-                throw new MessageNotFoundError(channel, messageStr);
+                throw new MessageNotFoundError(channel, messageId);
         }
 
-        const mappingOptions = threadOptions((await bbtagUtil.json.parse(context, optionsStr)).object);
+        const mappingOptions = mapThreadOptions((await bbtagUtil.json.parse(context, optionsStr)).object);
 
         if (!mappingOptions.valid)
             throw new BBTagRuntimeError('Invalid options object');
@@ -96,3 +79,17 @@ export class ThreadCreateSubtag extends Subtag {
         }
     }
 }
+
+const mapThreadOptions = mapping.object({
+    name: mapping.string,
+    autoArchiveDuration: mapping.choice(
+        mapping.in(undefined),
+        mapping.string,
+        mapping.number
+    ),
+    private: mapping.choice(
+        mapping.in(undefined),
+        mapping.string,
+        mapping.boolean
+    )
+});

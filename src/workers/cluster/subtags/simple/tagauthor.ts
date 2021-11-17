@@ -5,21 +5,18 @@ export class TagAuthorSubtag extends Subtag {
     public constructor() {
         super({
             name: 'tagauthor',
-            category: SubtagType.SIMPLE,
             aliases: ['ccauthor'],
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns the user ID of the tag/cc author',
-                    exampleCode: 'This tag was created by {username;{tagauthor}}',
-                    exampleOut: 'This tag was created by stupid cat',
-                    returns: 'id',
-                    execute: (ctx) => this.getAuthor(ctx)
-                }
-            ]
+            category: SubtagType.SIMPLE
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.context()
+    ], {
+        description: 'Returns the user ID of the tag/cc author',
+        exampleCode: 'This tag was created by {username;{tagauthor}}',
+        exampleOut: 'This tag was created by stupid cat'
+    })
     public getAuthor(context: BBTagContext): string {
         return context.author;
     }

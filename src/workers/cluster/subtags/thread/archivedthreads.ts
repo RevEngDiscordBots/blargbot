@@ -1,30 +1,24 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { ChannelNotFoundError, InvalidChannelError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
+import { InvalidChannelError } from '@cluster/bbtag/errors';
 import { guard, SubtagType } from '@cluster/utils';
+import { GuildChannels } from 'discord.js';
 
 export class ArchivedThreadsSubtag extends Subtag {
     public constructor() {
         super({
             name: 'archivedthreads',
-            category: SubtagType.THREAD,
-            definition: [
-                {
-                    parameters: ['channel?'],
-                    description: '`channel` defaults to the current channel\n\nLists all archived threads in `channel`.\nReturns an array of thread channel IDs.',
-                    exampleCode: '{archivedthreads;123456789123456}',
-                    exampleOut: '["123456789012345", "98765432198765"]',
-                    returns: 'id[]',
-                    execute: (ctx, [channel]) => this.getArchivedThreads(ctx, channel.value)
-                }
-            ]
+            category: SubtagType.THREAD
         });
     }
 
-    public async getArchivedThreads(context: BBTagContext, channelStr: string): Promise<string[]> {
-        const channel = await context.queryChannel(channelStr);
-        if (channel === undefined)
-            throw new ChannelNotFoundError(channelStr);
-
+    @Subtag.signature('snowflake[]', [
+        Subtag.argument('channel', 'channel').ifOmittedUse('{channelid}')
+    ], {
+        description: 'Lists all archived threads in `channel`.\nReturns an array of thread channel IDs.',
+        exampleCode: '{archivedthreads;123456789123456}',
+        exampleOut: '["123456789012345", "98765432198765"]'
+    })
+    public async getArchivedThreads(channel: GuildChannels): Promise<string[]> {
         if (!guard.isThreadableChannel(channel))
             throw new InvalidChannelError(channel);
 

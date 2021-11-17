@@ -6,21 +6,18 @@ export class DeleteThreadSubtag extends Subtag {
     public constructor() {
         super({
             name: 'deletethread',
-            category: SubtagType.THREAD,
             aliases: ['threadelete', 'threaddelete'],
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Deletes the current thread and returns `true` if successful.',
-                    exampleCode: '{deletethread}',
-                    exampleOut: '(thread was deleted)',
-                    returns: 'boolean',
-                    execute: (ctx) => this.deleteThread(ctx)
-                }
-            ]
+            category: SubtagType.THREAD
         });
     }
 
+    @Subtag.signature('boolean', [
+        Subtag.context()
+    ], {
+        description: 'Deletes the current thread and returns `true` if successful.',
+        exampleCode: '{deletethread}',
+        exampleOut: '(thread was deleted)'
+    })
     public async deleteThread(context: BBTagContext): Promise<boolean> {
         if (!guard.isThreadChannel(context.channel))
             throw new BBTagRuntimeError('Not a thread channel');

@@ -6,20 +6,15 @@ export class LbSubtag extends Subtag {
         super({
             name: 'lb',
             category: SubtagType.SIMPLE,
-            desc: 'Will be replaced by `{` on execution.',
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns `{`',
-                    exampleCode: 'This is a bracket! {lb}',
-                    exampleOut: 'This is a bracket! {',
-                    returns: 'string',
-                    execute: () => this.getOpenBrace()
-                }
-            ]
+            desc: 'Will be replaced by `{` on execution.'
         });
     }
 
+    @Subtag.signature('string', [], {
+        description: 'Returns `{`',
+        exampleCode: 'This is a bracket! {lb}',
+        exampleOut: 'This is a bracket! {'
+    })
     public getOpenBrace(): '{' {
         return '{';
     }

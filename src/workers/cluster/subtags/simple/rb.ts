@@ -5,20 +5,15 @@ export class RbSubtag extends Subtag {
     public constructor() {
         super({
             name: 'rb',
-            category: SubtagType.SIMPLE,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns `}`',
-                    exampleCode: 'This is a bracket! {rb}',
-                    exampleOut: 'This is a bracket! }',
-                    returns: 'string',
-                    execute: () => this.getCloseBrace()
-                }
-            ]
+            category: SubtagType.SIMPLE
         });
     }
 
+    @Subtag.signature('string', [], {
+        description: 'Returns `}`',
+        exampleCode: 'This is a bracket! {rb}',
+        exampleOut: 'This is a bracket! }'
+    })
     public getCloseBrace(): '}' {
         return '}';
     }
