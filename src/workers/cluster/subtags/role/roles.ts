@@ -1,50 +1,35 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { UserNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { Guild, GuildMember } from 'discord.js';
 
 export class RolesSubtag extends Subtag {
     public constructor() {
         super({
             name: 'roles',
-            category: SubtagType.ROLE,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns an array of roles on the current guild.',
-                    exampleCode: 'The roles on this guild are: {roles}.',
-                    exampleOut: 'The roles on this guild are: ["11111111111111111","22222222222222222"].',
-                    returns: 'id[]',
-                    execute: (ctx) => this.getGuildRoles(ctx)
-                },
-                {
-                    parameters: ['user', 'quiet?'],
-                    description: 'Returns `user`\'s roles in the current guild. If `quiet` is specified, if `user` can\'t be found it will simply return nothing.',
-                    exampleCode: 'Stupid cat has the roles: {roles;Stupid cat}',
-                    exampleOut: 'Stupid cat has the roles: ["11111111111111111","22222222222222222"]',
-                    returns: 'id[]',
-                    execute: (ctx, [userId, quiet]) => this.getUserRoles(ctx, userId.value, quiet.value !== '')
-                }
-            ]
+            category: SubtagType.ROLE
         });
     }
 
-    public getGuildRoles(context: BBTagContext): string[] {
-        return context.member.roles.cache.sort((a, b) => b.position - a.position).map(r => r.id);
+    @Subtag.signature('snowflake[]', [
+        Subtag.guild()
+    ], {
+        description: 'Returns an array of roles on the current guild.',
+        exampleCode: 'The roles on this guild are: {roles}.',
+        exampleOut: 'The roles on this guild are: ["11111111111111111","22222222222222222"].'
+    })
+    public getGuildRoles(guild: Guild): string[] {
+        return guild.roles.cache.sort((a, b) => b.position - a.position).map(r => r.id);
     }
 
-    public async getUserRoles(
-        context: BBTagContext,
-        userId: string,
-        quiet: boolean
-    ): Promise<string[]> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const member = await context.queryMember(userId, { noLookup: quiet });
-
-        if (member === undefined) {
-            throw new UserNotFoundError(userId)
-                .withDisplay(quiet ? '' : undefined);
-        }
-
+    @Subtag.signature('snowflake[]', [
+        Subtag.argument('user', 'member', { quietParseError: '' }),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns `user`\'s roles in the current guild. If `quiet` is specified, if `user` can\'t be found it will simply return nothing.',
+        exampleCode: 'Stupid cat has the roles: {roles;Stupid cat}',
+        exampleOut: 'Stupid cat has the roles: ["11111111111111111","22222222222222222"]'
+    })
+    public getUserRoles(member: GuildMember): string[] {
         return member.roles.cache.sort((a, b) => b.position - a.position).map(r => r.id);
     }
 }

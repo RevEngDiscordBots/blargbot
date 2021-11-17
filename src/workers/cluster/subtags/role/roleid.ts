@@ -1,38 +1,24 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { RoleNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { Role } from 'discord.js';
 
 export class RoleIdSubtag extends Subtag {
     public constructor() {
         super({
             name: 'roleid',
-            category: SubtagType.ROLE,
-            definition: [
-                {
-                    parameters: ['role', 'quiet?'],
-                    description: 'Returns `role`\'s ID. If `quiet` is specified, if `role` can\'t be found it will simply return nothing.',
-                    exampleCode: 'The admin role ID is: {roleid;admin}.',
-                    exampleOut: 'The admin role ID is: 123456789123456.',
-                    returns: 'id',
-                    execute: (ctx, [roleId, quiet]) => this.getRoleId(ctx, roleId.value, quiet.value !== '')
-                }
-            ]
+            category: SubtagType.ROLE
         });
     }
 
-    public async getRoleId(
-        context: BBTagContext,
-        roleId: string,
-        quiet: boolean
-    ): Promise<string> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const role = await context.queryRole(roleId, { noLookup: quiet });
-
-        if (role === undefined) {
-            throw new RoleNotFoundError(roleId)
-                .withDisplay(quiet ? '' : undefined);
-        }
-
+    @Subtag.signature('snowflake', [
+        Subtag.argument('role', 'role', { quietParseError: '' }),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns `role`\'s ID. If `quiet` is specified, if `role` can\'t be found it will simply return nothing.',
+        exampleCode: 'The admin role ID is: {roleid;admin}.',
+        exampleOut: 'The admin role ID is: 123456789123456.'
+    })
+    public getRoleId(role: Role): string {
         return role.id;
     }
 }

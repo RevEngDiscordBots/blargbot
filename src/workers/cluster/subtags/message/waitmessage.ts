@@ -26,8 +26,8 @@ export class WaitMessageSubtags extends Subtag {
 
     @Subtag.signature('snowflake[]', [
         Subtag.context(),
-        Subtag.argument('channels', 'channel[]', { flattenArray: true, noLookup: true }).ifOmittedUse('{channelid}'),
-        Subtag.argument('users', 'user[]', { flattenArray: true, noLookup: true }).ifOmittedUse('{userid}'),
+        Subtag.argument('channels', 'channel[]', { allowSingle: true, noLookup: true }).ifOmittedUse('{channelid}'),
+        Subtag.argument('users', 'user[]', { allowSingle: true, noLookup: true }).ifOmittedUse('{userid}'),
         Subtag.argument('condition', 'ast').ifOmittedUse('true'),
         Subtag.argument('timeout', 'number').ifOmittedUse(60)
     ], {

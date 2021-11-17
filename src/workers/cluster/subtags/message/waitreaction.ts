@@ -29,8 +29,8 @@ export class WaitReactionSubtag extends Subtag {
 
     @Subtag.signature('string[]', [
         Subtag.context(),
-        Subtag.argument('messageIds', 'snowflake[]', { flattenArray: true }),
-        Subtag.argument('users', 'user[]', { flattenArray: true, noLookup: true }).ifOmittedUse('{userid}'),
+        Subtag.argument('messageIds', 'snowflake[]', { allowSingle: true }),
+        Subtag.argument('users', 'user[]', { allowSingle: true, noLookup: true }).ifOmittedUse('{userid}'),
         Subtag.argument('reactions', 'emoji[]').allowOmitted(),
         Subtag.argument('condition', 'ast').ifOmittedUse('true'),
         Subtag.argument('timeout', 'number').ifOmittedUse(60)

@@ -143,7 +143,7 @@ interface SubtagParameterDescriptor<TValue = unknown, TName extends string | und
     noEmit(): SubtagParameterDescriptor<never, TName>;
 
     allowOmitted(): SubtagParameterDescriptor<TValue | undefined, TName>;
-    ifOmittedUse<T extends Exclude<JValue, string>>(value: T): SubtagParameterDescriptor<TValue | T, TName>;
+    ifOmittedUse<T extends Exclude<JValue | bigint, string>>(value: T): SubtagParameterDescriptor<TValue | T, TName>;
     ifOmittedUse(bbtag: string, isBBTag?: true): SubtagParameterDescriptor<TValue, TName>;
     ifOmittedUse<T extends string>(bbtag: T, isBBTag: false): SubtagParameterDescriptor<TValue | T, TName>;
 
@@ -193,7 +193,15 @@ interface SubtagEmbedArgumentOptions {
 }
 
 interface SubtagArrayArgumentOptions {
-    readonly flattenArray?: boolean;
+    /** Allow the argument value to be parsed as a single value if it isnt an array.
+     * @example
+     * {subtag;arg} => ['arg']
+     * {subtag;["arg"]} => ['arg']
+     * {subtag;["1","2"]} => ['1','2']
+    */
+    readonly allowSingle?: boolean;
+
+    readonly notEmpty?: boolean;
 }
 
 type SubtagArgumentOptionsMap = {
@@ -229,6 +237,7 @@ type SubtagReturnTypeMap =
     & SubtagReturnTypeMapGenerator<'string', string>
     & SubtagReturnTypeMapGenerator<'boolean', boolean>
     & SubtagReturnTypeMapGenerator<'number' | 'integer' | 'float' | 'color', number>
+    & SubtagReturnTypeMapGenerator<'bigint', bigint>
     & SubtagReturnTypeMapGenerator<'snowflake', Snowflake>
     & SubtagReturnTypeMapGenerator<'json', JToken>
     & {
