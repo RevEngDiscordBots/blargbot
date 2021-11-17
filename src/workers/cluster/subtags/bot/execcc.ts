@@ -13,7 +13,7 @@ export class ExecccSubtag extends Subtag {
     @Subtag.signature('string', [
         Subtag.context(),
         Subtag.argument('customCommandName', 'string'),
-        Subtag.argument('args', 'string', { repeat: [0, Infinity] })
+        Subtag.argument('args', 'string').repeat(0, Infinity)
     ], {
         description: 'Executes another `ccommand`, giving it `args` as the input. Useful for modules.\n' +
             '`{exec}` executes `ccommand` as if `ccommand`\'s code was in the root ccommand.',

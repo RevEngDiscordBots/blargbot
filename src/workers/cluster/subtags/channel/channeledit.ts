@@ -15,8 +15,8 @@ export class ChannelEditSubtag extends Subtag {
 
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
-        Subtag.argument('options', 'string', { ifOmitted: '{}' }) // TODO integrate mapping framework somehow?
+        Subtag.argument('channel', 'channel', { parseError: 'Channel does not exist' }),
+        Subtag.argument('options', 'string').ifOmittedUse('{}', false) // TODO integrate mapping framework somehow?
     ], {
         description: 'Edits a channel with the given information.\n' +
             '`options` is a JSON object, containing any or all of the following properties:\n' +

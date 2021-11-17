@@ -26,7 +26,7 @@ export class JsonSetSubtag extends Subtag {
         Subtag.argument('json', 'json*', { isVariableName: 'maybe' }),
         Subtag.argument('path', 'string'),
         Subtag.argument('value', 'json'),
-        Subtag.argument('create', 'boolean', { ifOmitted: false, mode: 'notEmpty' })
+        Subtag.argument('create', 'boolean', { mode: 'notEmpty' }).ifOmittedUse(false)
     ], {
         description: 'Using the `input` as a base, navigates the provided dot-notated `path` and assigns the `value`. ' +
             '`input` must be a variable name, or an array retrieved from `{get}`. The variable/array will then be updated with the new values\n' +
@@ -58,7 +58,7 @@ export class JsonSetSubtag extends Subtag {
         Subtag.argument('input', 'json'),
         Subtag.argument('path', 'string'),
         Subtag.argument('value', 'json'),
-        Subtag.argument('create', 'boolean', { ifOmitted: false, mode: 'notEmpty' })
+        Subtag.argument('create', 'boolean', { mode: 'notEmpty' }).ifOmittedUse(false)
     ], {
         description: 'Using the `input` as a base, navigates the provided dot-notated `path` and assigns the `value`. ' +
             '`input` can be a JSON object or an array.\n' +

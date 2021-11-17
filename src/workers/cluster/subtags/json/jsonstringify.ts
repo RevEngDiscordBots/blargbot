@@ -11,8 +11,8 @@ export class JsonStringifySubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.argument('input', 'json', { isVariableName: 'maybe', ifOmitted: undefined }),
-        Subtag.argument('indent', 'integer', { ifOmitted: 4 })
+        Subtag.argument('input', 'json', { isVariableName: 'maybe' }).allowOmitted(),
+        Subtag.argument('indent', 'integer').ifOmittedUse(4)
     ], {
         description: 'Pretty-prints the provided JSON `input` with the provided `indent`.',
         exampleCode: '{jsonstringify;["one","two","three"]}',

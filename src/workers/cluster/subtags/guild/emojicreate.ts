@@ -16,7 +16,7 @@ export class EmojiCreateSubtag extends Subtag {
         Subtag.context(),
         Subtag.argument('name', 'string'),
         Subtag.argument('image', 'string'), //TODO add type for image data
-        Subtag.argument('roles', 'role[]', { isVariableName: 'maybe', ifOmitted: '[]' })
+        Subtag.argument('roles', 'role[]', { isVariableName: 'maybe' }).ifOmittedUse('[]')
     ], {
         description: 'Creates a emoji with the given name and image. ' +
             '`image` is either a link to an image, or a base64 encoded data url (`data:<content-type>;base64,<base64-data>`). You may need to use {semi} for the latter.' +

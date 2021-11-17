@@ -14,8 +14,8 @@ export class ChannelSetPosSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
-        Subtag.argument('position', 'integer', { ifInvalid: NaN }) //TODO not a number error & bounds check
+        Subtag.argument('channel', 'channel', { parseError: 'Channel does not exist' }),
+        Subtag.argument('position', 'integer').catch(NaN) //TODO not a number error & bounds check
     ], {
         description: 'Moves a channel to the provided position.',
         exampleCode: '{channelsetpos;11111111111111111;5}',

@@ -8,28 +8,23 @@ export class BoolSubtag extends Subtag {
     public constructor() {
         super({
             name: 'bool',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['arg1', 'evaluator', 'arg2'],
-                    description:
-                        'Evaluates `arg1` and `arg2` using the `evaluator` and returns `true` or `false`. ' +
-                        'Valid evaluators are `' + Object.keys(operators).join('`, `') + '`\n' +
-                        'The positions of `evaluator` and `arg1` can be swapped.',
-                    exampleCode: '{bool;5;<=;10}',
-                    exampleOut: 'true',
-                    returns: 'boolean',
-                    execute: (_, [arg1, evaluator, arg2]) => this.runCondition(arg1.value, evaluator.value, arg2.value)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
-    public runCondition(
-        left: string,
-        evaluator: string,
-        right: string
-    ): boolean {
+    @Subtag.signature('boolean', [
+        Subtag.argument('left', 'string'),
+        Subtag.argument('operator', 'string'),
+        Subtag.argument('right', 'string')
+    ], {
+        description:
+            'Evaluates `left` and `right` using the `operator`. ' +
+            'Valid operators are `' + Object.keys(operators).join('`, `') + '`\n' +
+            'The positions of `operator` and `left` can be swapped.',
+        exampleCode: '{bool;5;<=;10}',
+        exampleOut: 'true'
+    })
+    public runCondition(left: string, evaluator: string, right: string): boolean {
         let operator;
         if (bbtagUtil.operators.isCompareOperator(evaluator)) {
             operator = evaluator;

@@ -12,7 +12,7 @@ export class SortSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.argument('array', 'json[]*', { isVariableName: 'maybe' }),
-        Subtag.argument('descending', 'boolean', { mode: 'tryParseOrNotEmpty', ifOmitted: false })
+        Subtag.argument('descending', 'boolean', { mode: 'tryParseOrNotEmpty' }).ifOmittedUse(false)
     ], {
         description: 'Sorts the `array` in ascending order and modifies the variable. If `descending` is provided, sorts in descending order.',
         exampleCode: '{sort;{get;~myArray}}',
@@ -25,7 +25,7 @@ export class SortSubtag extends Subtag {
 
     @Subtag.signature('json[]', [
         Subtag.argument('array', 'json[]'),
-        Subtag.argument('descending', 'boolean', { mode: 'tryParseOrNotEmpty', ifOmitted: false })
+        Subtag.argument('descending', 'boolean', { mode: 'tryParseOrNotEmpty' }).ifOmittedUse(false)
     ], {
         description: 'Sorts the `array` in ascending order. If `descending` is provided, sorts in descending order.',
         exampleCode: '{sort;[3, 2, 5, 1, 4]}',

@@ -22,7 +22,7 @@ export class ChannelPosSubtag extends Subtag {
         exampleOut: 'This channel is in position 1'
     })
     @Subtag.signature('number', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Returns the position of the given `channel`. If it cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',

@@ -6,20 +6,17 @@ export class HtmlDecodeSubtag extends Subtag {
     public constructor() {
         super({
             name: 'htmldecode',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['text+'],
-                    description: 'Decodes html entities from `text`.',
-                    exampleCode: '{htmldecode;&lt;hello, world&gt;}',
-                    exampleOut: '<hello, world>',
-                    returns: 'string',
-                    execute: (_, text) => this.htmlDecode(text.map(arg => arg.value).join(';'))
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string')
+    ], {
+        description: 'Decodes html entities from `text`.',
+        exampleCode: '{htmldecode;&lt;hello, world&gt;}',
+        exampleOut: '<hello, world>'
+    })
     public htmlDecode(text: string): string {
         return decode(text);
     }

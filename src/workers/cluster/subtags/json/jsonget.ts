@@ -15,7 +15,7 @@ export class JsonGetSubtag extends Subtag {
 
     @Subtag.signature('json?', [
         Subtag.argument('input', 'json', { isVariableName: 'maybe' }),
-        Subtag.argument('path', 'string', { ifOmitted: undefined })
+        Subtag.argument('path', 'string').allowOmitted()
     ], {
         description: 'Navigates the path of a JSON object. Works with arrays too!\n' +
             '`input` can be a JSON object, array, or string. If a string is provided, a variable with the same name will be used.\n' +

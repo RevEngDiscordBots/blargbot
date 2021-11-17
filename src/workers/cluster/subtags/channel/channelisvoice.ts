@@ -20,7 +20,7 @@ export class ChannelIsVoice extends Subtag {
         exampleOut: 'Yeah you can write stuff here'
     })
     @Subtag.signature('boolean', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Checks if `channel` is a voice channel. If it cannot be found returns `No channel found`, or `false` if `quiet` is `true`.',

@@ -32,7 +32,7 @@ export class SlowmodeSubtag extends Subtag {
     @Subtag.signature('nothing', [
         Subtag.context(),
         Subtag.argument('channel', 'channel'),
-        Subtag.argument('time', 'integer', { ifOmitted: 0 })
+        Subtag.argument('time', 'integer').ifOmittedUse(0)
     ], {
         description: 'Enables slowmode in `channel` and set the cooldown to `time`.',
         exampleCode: '{slowmode;testing-grounds;10}',

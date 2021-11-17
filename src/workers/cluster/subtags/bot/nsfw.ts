@@ -11,7 +11,7 @@ export class NsfwSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('message', 'string', { ifOmitted: '❌ This contains NSFW content! Go to a NSFW channel. ❌' })
+        Subtag.argument('message', 'string').ifOmittedUse('❌ This contains NSFW content! Go to a NSFW channel. ❌')
     ], {
         description: 'Marks the output as being NSFW, and only to be sent in NSFW channels. A requirement for any tag with NSFW content. `message` is the error to show',
         exampleCode: 'This command is not safe! {nsfw}',

@@ -12,7 +12,7 @@ export class JsonSubtag extends Subtag {
     }
 
     @Subtag.signature('json', [
-        Subtag.argument('input', 'source', { ifOmitted: '{}' })
+        Subtag.argument('input', 'source').ifOmittedUse('{}', false)
     ], {
         description: 'Defines a raw JSON object. Usage of subtags is disabled in `input`, inside `input` all brackets are required to match.',
         exampleCode: '{json;{\n  "key": "value"\n}}',

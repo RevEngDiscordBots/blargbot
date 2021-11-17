@@ -13,7 +13,7 @@ export class ForeachSubtag extends Subtag {
     @Subtag.signature('loop', [
         Subtag.context(),
         Subtag.argument('variable', 'variable'),
-        Subtag.argument('array', 'json[]', { isVariableName: 'maybe', ifInvalid: [] }),
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' }).catch('[]'),
         Subtag.argument('code', 'deferred')
     ], {
         description: 'For every element in `array`, a variable called `variable` will be set and then `code` will be run.\n' +

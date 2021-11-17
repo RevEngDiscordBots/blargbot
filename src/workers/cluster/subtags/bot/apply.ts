@@ -15,7 +15,7 @@ export class ApplySubtag extends Subtag {
         Subtag.context(),
         Subtag.subtagAST(),
         Subtag.argument('subtagName', 'string'),
-        Subtag.argument('subtagArgs', 'string', { repeat: [0, Infinity] })
+        Subtag.argument('subtagArgs', 'string').repeat(0, Infinity)
     ], {
         description: 'Executes `subtag`, using the `args` as parameters. If `args` is an array, it will get deconstructed to it\'s individual elements.',
         exampleCode: '{apply;randint;[1,4]}',

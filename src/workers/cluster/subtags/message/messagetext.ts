@@ -32,7 +32,7 @@ export class MessageTextSubtag extends Subtag {
     })
     @Subtag.signature('string', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.argument('messageId', 'snowflake'),
         Subtag.quietArgument().noEmit()
     ], {

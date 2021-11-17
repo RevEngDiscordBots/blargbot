@@ -23,7 +23,7 @@ export class EmbedBuildSubag extends Subtag {
     }
 
     @Subtag.signature('json', [
-        Subtag.argument('values', 'string', { repeat: [1, Infinity] })
+        Subtag.argument('values', 'string').repeat(1, Infinity)
     ], {
         exampleCode: '{embedbuild;\n  title:hello!;\n  description:I am an example embed;\n  fields.name:Field 1;\n  fields.value:This is the first field!;\n  ' +
             'fields.name:Field 2;\n  fields.value:This is the next field and is inline!;\n  fields.inline:true\n}',

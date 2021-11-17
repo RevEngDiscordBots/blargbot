@@ -14,8 +14,8 @@ export class ChannelSetPermsSubtag extends Subtag {
 
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
-        Subtag.argument('type', 'string', { guard: v => v === 'role', customError: 'Type must be member or role' }).noEmit(), //TODO Make this be type restricted to 'role'
+        Subtag.argument('channel', 'channel', { parseError: 'Channel does not exist' }),
+        Subtag.argument('type', 'string').guard(['role'] as const, 'Type must be member or role').noEmit(),
         Subtag.argument('role', 'role')
     ], {
         description: 'Deletes the permission overwrites of `role` in `channel`.\n' +
@@ -25,8 +25,8 @@ export class ChannelSetPermsSubtag extends Subtag {
     })
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
-        Subtag.argument('type', 'string', { guard: v => v === 'member', customError: 'Type must be member or role' }).noEmit(), //TODO Make this be type restricted to 'member'
+        Subtag.argument('channel', 'channel', { parseError: 'Channel does not exist' }),
+        Subtag.argument('type', 'string').guard(['member'] as const, 'Type must be member or role').noEmit(),
         Subtag.argument('user', 'user')
     ], {
         description: 'Deletes the permission overwrites of `user` in `channel`.\n' +
@@ -54,11 +54,11 @@ export class ChannelSetPermsSubtag extends Subtag {
 
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
-        Subtag.argument('type', 'string', { guard: v => v === 'role', customError: 'Type must be member or role' }).noEmit(), //TODO Make this be type restricted to 'role'
+        Subtag.argument('channel', 'channel', { parseError: 'Channel does not exist' }),
+        Subtag.argument('type', 'string').guard(['role'] as const, 'Type must be member or role').noEmit(),
         Subtag.argument('role', 'role'),
-        Subtag.argument('allow', 'bigint', { ifOmitted: undefined }),
-        Subtag.argument('deny', 'bigint', { ifOmitted: undefined })
+        Subtag.argument('allow', 'bigint').allowOmitted(),
+        Subtag.argument('deny', 'bigint').allowOmitted()
     ], {
         description: 'Sets the permissions of a `role` in `channel`\n' +
             '`type` is must be `role`\n' +
@@ -69,11 +69,11 @@ export class ChannelSetPermsSubtag extends Subtag {
     })
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' }),
-        Subtag.argument('type', 'string', { guard: v => v === 'member', customError: 'Type must be member or role' }).noEmit(), //TODO Make this be type restricted to 'member'
+        Subtag.argument('channel', 'channel', { parseError: 'Channel does not exist' }),
+        Subtag.argument('type', 'string').guard(['member'] as const, 'Type must be member or role').noEmit(),
         Subtag.argument('user', 'user'),
-        Subtag.argument('allow', 'bigint', { ifOmitted: undefined }),
-        Subtag.argument('deny', 'bigint', { ifOmitted: undefined })
+        Subtag.argument('allow', 'bigint').allowOmitted(),
+        Subtag.argument('deny', 'bigint').allowOmitted()
     ], {
         description: 'Sets the permissions of a `user` in `channel`\n' +
             '`type` is must be `member`\n' +

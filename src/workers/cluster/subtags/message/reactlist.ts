@@ -47,7 +47,7 @@ export class ReactListSubtag extends Subtag {
         Subtag.context(),
         Subtag.context(ctx => ctx.channel),
         Subtag.argument('messageId', 'snowflake'),
-        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+        Subtag.argument('reactions', 'emoji').repeat(1, Infinity)
     ], {
         description: 'Returns an array of users who reacted `reactions` on `messageId` in the current channel. A user only needs to react to one reaction to be included in the resulting array.',
         exampleCode: '{reactlist;111111111111111111;🤔;👀}',
@@ -57,7 +57,7 @@ export class ReactListSubtag extends Subtag {
         Subtag.context(),
         Subtag.argument('channel', 'channel', { noLookup: true }),
         Subtag.argument('messageId', 'snowflake'),
-        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+        Subtag.argument('reactions', 'emoji').repeat(1, Infinity)
     ], {
         description: 'Returns an array of users who reacted `reactions` on `messageId` in `channel`. A user only needs to react to one reaction to be included in the resulting array.',
         exampleCode: '{reactlist;222222222222222222;111111111111111111;🤔;👀}',

@@ -12,20 +12,6 @@ export class ReactRemoveSubtag extends Subtag {
         });
     }
 
-    public async removeAllReactions(context: BBTagContext, channel: GuildChannels, messageId: string): Promise<void> {
-        const permissions = channel.permissionsFor(context.discord.user);
-        if (permissions === null || !permissions.has('MANAGE_MESSAGES'))
-            throw new BBTagRuntimeError('I need to be able to Manage Messages to remove reactions');
-
-        const message = await context.util.getMessage(channel, messageId);
-        if (message === undefined)
-            throw new MessageNotFoundError(channel, messageId);
-
-        if (!(await context.isStaff || context.ownsMessage(message.id)))
-            throw new BBTagRuntimeError('Author must be staff to modify unrelated messages');
-
-    }
-
     @Subtag.signature('nothing', [
         Subtag.context(),
         Subtag.context(ctx => ctx.channel),
@@ -71,7 +57,7 @@ export class ReactRemoveSubtag extends Subtag {
         Subtag.context(ctx => ctx.channel),
         Subtag.argument('messageId', 'snowflake'),
         Subtag.argument('user', 'user', { noLookup: true }),
-        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+        Subtag.argument('reactions', 'emoji').repeat(1, Infinity)
     ], {
         description: 'Removes `reactions` made by `user` on `messageId` in the current channel.',
         exampleCode: '{reactremove;12345678901234;stupidcat;🤔;👀}'
@@ -81,7 +67,7 @@ export class ReactRemoveSubtag extends Subtag {
         Subtag.argument('channel', 'channel', { noLookup: true }),
         Subtag.argument('messageId', 'snowflake'),
         Subtag.argument('user', 'user', { noLookup: true }),
-        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+        Subtag.argument('reactions', 'emoji').repeat(1, Infinity)
     ], {
         description: 'Removes `reactions` made by `user` on `messageId` in `channel`.',
         exampleCode: '{reactremove;#support;12345678901234;stupidcat;🤔;👀}'

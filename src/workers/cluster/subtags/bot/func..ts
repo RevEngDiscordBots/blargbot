@@ -15,8 +15,8 @@ export class FunctionInvokeSubtag extends Subtag {
     @Subtag.signature('string', [
         Subtag.context(),
         Subtag.subtagName(n => n.replace(/^func\./i, '')),
-        Subtag.argument('args', 'string', { repeat: [0, Infinity] })
-    ])
+        Subtag.argument('args', 'string').repeat(0, Infinity)
+    ], { hidden: true })
     public async invokeFunction(context: BBTagContext, functionName: string, args: string[]): Promise<string> {
         const func = context.scopes.local.functions[functionName.toLowerCase()];
         if (func === undefined)

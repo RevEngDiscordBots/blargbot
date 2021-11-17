@@ -29,11 +29,11 @@ export class WaitReactionSubtag extends Subtag {
 
     @Subtag.signature('string[]', [
         Subtag.context(),
-        Subtag.argument('messageIds', 'snowflake[]', { flattenArrays: true }),
-        Subtag.argument('users', 'user[]', { ifOmitted: '{userid}', flattenArrays: true, noLookup: true }),
-        Subtag.argument('reactions', 'emoji[]', { ifOmitted: undefined }),
-        Subtag.argument('condition', 'ast', { ifOmitted: 'true' }),
-        Subtag.argument('timeout', 'number', { ifOmitted: 60 })
+        Subtag.argument('messageIds', 'snowflake[]', { flattenArray: true }),
+        Subtag.argument('users', 'user[]', { flattenArray: true, noLookup: true }).ifOmittedUse('{userid}'),
+        Subtag.argument('reactions', 'emoji[]').allowOmitted(),
+        Subtag.argument('condition', 'ast').ifOmittedUse('true'),
+        Subtag.argument('timeout', 'number').ifOmittedUse(60)
     ], {
         description: 'Pauses the command until one of the `reactions` is added to any of the `messageIds` by any of the `users` which satisfies the `condition`.\n' +
             'If no `reactions` are given, then any reaction will suffice.\n' +

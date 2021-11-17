@@ -12,7 +12,7 @@ export class OutputSubtag extends Subtag {
 
     @Subtag.signature('snowflake?', [
         Subtag.context(),
-        Subtag.argument('text', 'string', { ifOmitted: undefined })
+        Subtag.argument('text', 'string').allowOmitted()
     ], {
         description: 'Forces an early send of the default output message, using `text` as the text to show. ' +
             'If this is used then there will be no output sent once the tag finishes. Only 1 `{output}` may be used per ' +

@@ -14,16 +14,19 @@ export class WebhookSubtag extends Subtag {
 
     public async executeWebhook(webhookID: string, webhookToken: string): Promise<never>;
     public async executeWebhook(webhookID: string, webhookToken: string, content?: string, embeds?: MessageEmbedOptions[], username?: string, avatar?: string, fileContent?: string, fileName?: string): Promise<void>;
-    @Subtag.signature('error', [Subtag.argument('id', 'string'), Subtag.argument('token', 'string')], { hidden: true })
+    @Subtag.signature('error', [
+        Subtag.argument('id', 'string'),
+        Subtag.argument('token', 'string')
+    ], { hidden: true })
     @Subtag.signature('nothing', [
         Subtag.argument('id', 'string'),
         Subtag.argument('token', 'string'),
-        Subtag.argument('content', 'string', { ifOmitted: undefined }),
-        Subtag.argument('embed', 'embed[]', { ifOmitted: undefined, allowMalformed: true }),
-        Subtag.argument('username', 'string', { ifOmitted: undefined }),
-        Subtag.argument('avatarUrl', 'string', { ifOmitted: undefined }),
-        Subtag.argument('fileContent', 'string', { ifOmitted: undefined }),
-        Subtag.argument('fileName', 'string', { ifOmitted: 'readme.txt' })
+        Subtag.argument('content', 'string').allowOmitted(),
+        Subtag.argument('embed', 'embed[]', { allowMalformed: true }).allowOmitted(),
+        Subtag.argument('username', 'string').allowOmitted(),
+        Subtag.argument('avatarUrl', 'string').allowOmitted(),
+        Subtag.argument('fileContent', 'string').allowOmitted(),
+        Subtag.argument('fileName', 'string').ifOmittedUse('readme.txt')
     ], {
         description: 'Executes a webhook.\nIf `fileContent` starts with `buffer:`, the following text will be parsed as base64 to a raw buffer.',
         exampleCode: `{webhook;

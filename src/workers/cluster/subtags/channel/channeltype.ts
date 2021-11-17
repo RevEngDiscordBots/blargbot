@@ -19,7 +19,7 @@ export class ChannelTypeSubtag extends Subtag {
         exampleOut: 'text'
     })
     @Subtag.signature('string', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Returns the type the given `channel`. If it cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',

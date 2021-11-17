@@ -1,5 +1,6 @@
 import { randInt } from './randInt';
 
+export function randChoose<T extends string>(set: T): SplitString<T>
 export function randChoose<T>(set: T[] | Set<T> | Iterable<unknown>): T
 export function randChoose<K, V>(set: Map<K, V>): [K, V];
 export function randChoose<T>(set: T[] | Set<T> | Iterable<unknown>, count: number): T[]

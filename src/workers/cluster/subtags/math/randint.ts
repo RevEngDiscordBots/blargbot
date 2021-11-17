@@ -10,10 +10,18 @@ export class RandIntSubtag extends Subtag {
     }
 
     @Subtag.signature('number', [
-        Subtag.argument('min', 'number', { ifOmitted: 0, useFallback: true }),
+        Subtag.useValue(0),
         Subtag.argument('max', 'number', { useFallback: true })
     ], {
-        description: 'Chooses a random whole number between `min` and `max` (inclusive). `min` defaults to 0.',
+        description: 'Chooses a random whole number between 0 and `max` (inclusive).',
+        exampleCode: 'You rolled a {randint;6}.',
+        exampleOut: 'You rolled a 3.'
+    })
+    @Subtag.signature('number', [
+        Subtag.argument('min', 'number', { useFallback: true }).ifOmittedUse(0),
+        Subtag.argument('max', 'number', { useFallback: true })
+    ], {
+        description: 'Chooses a random whole number between `min` and `max` (inclusive).',
         exampleCode: 'You rolled a {randint;1;6}.',
         exampleOut: 'You rolled a 5.'
     })

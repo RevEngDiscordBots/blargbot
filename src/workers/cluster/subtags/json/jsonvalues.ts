@@ -15,7 +15,7 @@ export class JsonValuesSubtag extends Subtag {
 
     @Subtag.signature('json[]', [
         Subtag.argument('object', 'json'),
-        Subtag.argument('path', 'string', { ifOmitted: undefined })
+        Subtag.argument('path', 'string').allowOmitted()
     ], {
         description: 'Retrieves all values from provided the JSON object. ' +
             '`object` can be a JSON object, array, or string. If a string is provided, a variable with the same name will be used.\n' +

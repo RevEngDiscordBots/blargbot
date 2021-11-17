@@ -13,7 +13,7 @@ export class FilterSubtag extends Subtag {
     @Subtag.signature('json[]', [
         Subtag.context(),
         Subtag.argument('variable', 'variable'),
-        Subtag.argument('array', 'json[]', { isVariableName: 'maybe', ifInvalid: [] }),
+        Subtag.argument('array', 'json[]', { isVariableName: 'maybe' }).catch('[]'),
         Subtag.argument('code', 'deferred')
     ], {
         description: 'For every element in `array`, a variable called `variable` will be set and `code` will be executed. Returns a new array containing all the elements that returned the value `true`.',

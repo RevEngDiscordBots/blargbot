@@ -13,7 +13,7 @@ export class ChannelIsCategorySubtag extends Subtag {
     }
 
     @Subtag.signature('boolean', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Checks if `channel` is a category. If it cannot be found returns `No channel found`, or `false` if `quiet` is `true`.',

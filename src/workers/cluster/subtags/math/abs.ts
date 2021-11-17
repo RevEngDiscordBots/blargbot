@@ -11,7 +11,7 @@ export class AbsSubtag extends Subtag {
     }
 
     @Subtag.signature('number[]', [
-        Subtag.argument('numbers', 'number', { repeat: [2, Infinity] })
+        Subtag.argument('numbers', 'number').repeat(2, Infinity)
     ], {
         description: 'Gets the absolute value of each `numbers` and returns an array containing the results',
         exampleCode: '{abs;-535;123;-42}',

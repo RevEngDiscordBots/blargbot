@@ -1,4 +1,4 @@
-import { BBTagContext, ParseResult, Subtag } from '@cluster/bbtag';
+import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { BBTagRuntimeError, MessageNotFoundError } from '@cluster/bbtag/errors';
 import { SubtagType } from '@cluster/utils';
 import { GuildChannels, MessageEmbedOptions } from 'discord.js';
@@ -18,7 +18,7 @@ export class EditSubtag extends Subtag {
         Subtag.context(ctx => ctx.channel),
         Subtag.argument('messageId', 'snowflake'),
         Subtag.useValue(undefined),
-        Subtag.argument('embeds', 'embed[]', { ifInvalid: shouldDeleteEmbeds })
+        Subtag.argument('embeds', 'embed[]').catch((err, val) => val === '_delete' ? [] : err)
     ], {
         description: 'Edits a `message` that I sent in the current channel to have the `embeds` given.',
         exampleCode: '{edit;111111111111111111;{embedbuild;title:Hello world}}'
@@ -38,7 +38,7 @@ export class EditSubtag extends Subtag {
         Subtag.argument('channel', 'channel'),
         Subtag.argument('messageId', 'snowflake'),
         Subtag.useValue(undefined),
-        Subtag.argument('embeds', 'embed[]', { ifInvalid: shouldDeleteEmbeds })
+        Subtag.argument('embeds', 'embed[]').catch((err, val) => val === '_delete' ? [] : err)
     ], {
         description: 'Edits a `message` that I sent in the `channel` to have the `embeds` given.',
         exampleCode: '{edit;111111111111111111;222222222222222222;{embedbuild;title:Hello world}}'
@@ -58,7 +58,7 @@ export class EditSubtag extends Subtag {
         Subtag.argument('channel', 'channel'),
         Subtag.argument('messageId', 'snowflake'),
         Subtag.argument('content', 'string'),
-        Subtag.argument('embeds', 'embed[]', { allowMalformed: true, ifInvalid: shouldDeleteEmbeds })
+        Subtag.argument('embeds', 'embed[]', { allowMalformed: true }).catch((err, val) => val === '_delete' ? [] : err)
     ], {
         description: 'Edits a `message` that I sent in the `channel` to have the `content` and `embeds` given.',
         exampleCode: '{edit;111111111111111111;222222222222222222;Hello world;{embedbuild;title:Foo bar}}'
@@ -84,10 +84,4 @@ export class EditSubtag extends Subtag {
             // NOOP
         }
     }
-}
-
-function shouldDeleteEmbeds(value: string): ParseResult<[]> {
-    if (value === '_delete')
-        return { success: true, value: [] };
-    return { success: false };
 }

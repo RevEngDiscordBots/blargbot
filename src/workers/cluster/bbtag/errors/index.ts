@@ -3,6 +3,7 @@ export * from './BBTagRuntimeError';
 export * from './BBTagTypeError';
 export * from './ChannelNotFoundError';
 export * from './InvalidChannelError';
+export * from './InvalidOperatorError';
 export * from './MessageNotFoundError';
 export * from './NotABooleanError';
 export * from './NotANumberError';

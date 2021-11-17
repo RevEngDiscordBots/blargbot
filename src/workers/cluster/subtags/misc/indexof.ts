@@ -1,31 +1,37 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { NotANumberError } from '@cluster/bbtag/errors';
-import { bbtagUtil, parse, SubtagType } from '@cluster/utils';
+import { Subtag } from '@cluster/bbtag';
+import { SubtagType } from '@cluster/utils';
 
 export class IndexOfSubtag extends Subtag {
     public constructor() {
         super({
             name: 'indexof',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['text|array', 'searchfor', 'start?:0'],
-                    description: 'Finds the index of `searchfor` in `text|array`, after `start`. `text|array` can either be plain text or an array. If it\'s not found, returns -1.',
-                    exampleCode: 'The index of "o" in "hello world" is {indexof;hello world;o}',
-                    exampleOut: 'The index of "o" in "hello world" is 4',
-                    returns: 'number',
-                    execute: (ctx, [text, search, start]) => this.indexOf(ctx, text.value, search.value, start.value)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
-    public indexOf(context: BBTagContext, text: string, query: string, startStr: string): number {
-        const from = parse.int(startStr, false) ?? parse.int(context.scopes.local.fallback ?? '', false);
-        if (from === undefined)
-            throw new NotANumberError(startStr);
+    @Subtag.signature('number', [
+        Subtag.argument('array', 'json[]'),
+        Subtag.argument('query', 'string'),
+        Subtag.argument('start', 'integer', { useFallback: true }).ifOmittedUse(0)
+    ], {
+        description: 'Finds the index of `query` in `array`, after `start`. If it\'s not found, returns -1.',
+        exampleCode: 'The index of "is" in ["this","is","a","test"] is {indexof;["this","is","a","test"];is}',
+        exampleOut: 'The index of "is" in ["this","is","a","test"] is 1'
+    })
+    public indexOfArray(array: JToken[], query: string, startIndex: number): number {
+        return array.indexOf(query, startIndex); // TODO Convert each element to a string first?
+    }
 
-        const input = bbtagUtil.tagArray.deserialize(text, false) ?? text;
-        return input.indexOf(query, from);
+    @Subtag.signature('number', [
+        Subtag.argument('text', 'string'),
+        Subtag.argument('query', 'string'),
+        Subtag.argument('start', 'integer', { useFallback: true }).ifOmittedUse(0)
+    ], {
+        description: 'Finds the index of `query` in `text`, after `start`. If it\'s not found, returns -1.',
+        exampleCode: 'The index of "o" in "hello world" is {indexof;hello world;o}',
+        exampleOut: 'The index of "o" in "hello world" is 4'
+    })
+    public indexOfString(text: string, query: string, startIndex: number): number {
+        return text.indexOf(query, startIndex);
     }
 }

@@ -11,7 +11,7 @@ export class HtmlDecodeSubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.argument('text', 'string', { repeat: [1, Infinity] })
+        Subtag.argument('text', 'string').repeat(1, Infinity)
     ], {
         description: 'Encodes `text` with escaped html entities.',
         exampleCode: '{htmlencode;<hello, world>}',

@@ -7,19 +7,16 @@ export class CommentSubtag extends Subtag {
             name: 'comment',
             aliases: ['//'],
             category: SubtagType.MISC,
-            desc: 'A subtag that just gets removed. Useful for documenting your code.',
-            definition: [
-                {
-                    parameters: ['~anything*'],
-                    exampleCode: 'This is a sentence. {//;This is a comment.}',
-                    exampleOut: 'This is a sentence.',
-                    returns: 'nothing',
-                    execute: () => this.doNothing()
-                }
-            ]
+            desc: 'A subtag that just gets removed. Useful for documenting your code.'
         });
     }
 
+    @Subtag.signature('nothing', [
+        Subtag.argument('anything', 'string').repeat(0, Infinity).noEmit()
+    ], {
+        exampleCode: 'This is a sentence. {//;This is a comment.}',
+        exampleOut: 'This is a sentence.'
+    })
     public doNothing(): void {
         /*NOOP*/
     }

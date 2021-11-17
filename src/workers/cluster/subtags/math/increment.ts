@@ -12,8 +12,8 @@ export class IncrementSubtag extends Subtag {
 
     @Subtag.signature('number', [
         Subtag.argument('variable', 'number*'),
-        Subtag.argument('amount', 'number', { ifOmitted: 1 }),
-        Subtag.argument('floor', 'boolean', { ifOmitted: true })
+        Subtag.argument('amount', 'number').ifOmittedUse(1),
+        Subtag.argument('floor', 'boolean').ifOmittedUse(true)
     ], {
         description: 'Increases `varName`\'s value by `amount`. ' +
             'If `floor` is `true` then the value will be rounded down.',

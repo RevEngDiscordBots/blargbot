@@ -6,20 +6,21 @@ export class Base64encodeSubtag extends Subtag {
         super({
             name: 'base64encode',
             aliases: ['btoa'],
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['text+'],
-                    description: 'Converts the provided text to base64.',
-                    exampleCode: '{base64decode;Fancy!}',
-                    exampleOut: 'RmFuY3kh!',
-                    returns: 'string',
-                    execute: (_, [text]) => this.encode(text.value)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string'),
+        Subtag.argument('rest', 'string').repeat(1, Infinity)
+    ], { hidden: true })
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string')
+    ], {
+        description: 'Converts the provided text to base64.',
+        exampleCode: '{base64decode;Fancy!}',
+        exampleOut: 'RmFuY3kh!'
+    })
     public encode(text: string): string {
         return Buffer.from(text).toString('base64');
     }

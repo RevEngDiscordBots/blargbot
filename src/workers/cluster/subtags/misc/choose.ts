@@ -1,40 +1,30 @@
 import { Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, NotANumberError } from '@cluster/bbtag/errors';
-import { SubtagArgument } from '@cluster/types';
-import { parse, SubtagType } from '@cluster/utils';
+import { BBTagRuntimeError } from '@cluster/bbtag/errors';
+import { SubtagType } from '@cluster/utils';
 
 export class ChooseSubtag extends Subtag {
     public constructor() {
         super({
             name: 'choose',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['choice', '~options+'],
-                    description: 'Chooses from the given `options`, where `choice` is the index of the option to select.',
-                    exampleCode: 'I feel like eating {choose;1;cake;pie;pudding} today.',
-                    exampleOut: 'I feel like eating pie today.',
-                    returns: 'string',
-                    execute: (_, [choice, ...options]) => this.choose(choice.value, options)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
-    public choose(
-        choice: string,
-        options: SubtagArgument[]
-    ): Promise<string> | string {
-        const index = parse.int(choice, false);
 
-        if (index === undefined)
-            throw new NotANumberError(choice);
-
+    @Subtag.signature('string', [
+        Subtag.argument('choice', 'integer'),
+        Subtag.argument('options', 'deferred').repeat(1, Infinity)
+    ], {
+        description: 'Chooses from the given `options`, where `choice` is the index of the option to select.',
+        exampleCode: 'I feel like eating {choose;1;cake;pie;pudding} today.',
+        exampleOut: 'I feel like eating pie today.'
+    })
+    public choose(index: number, options: Array<() => Awaitable<string>>): Awaitable<string> {
         if (index < 0)
             throw new BBTagRuntimeError('Choice cannot be negative');
 
         if (index >= options.length)
             throw new BBTagRuntimeError('Index out of range');
 
-        return options[index].wait();
+        return options[index]();
     }
 }

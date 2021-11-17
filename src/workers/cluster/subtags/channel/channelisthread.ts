@@ -20,7 +20,7 @@ export class ChannelIsThread extends Subtag {
         exampleOut: 'Cool, this is a thread channel!'
     })
     @Subtag.signature('boolean', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Checks if `channel` is a thread channel. If it cannot be found returns `No channel found`, or `false` if `quiet` is `true`.',

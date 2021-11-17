@@ -10,7 +10,7 @@ export class MaxSubtag extends Subtag {
     }
 
     @Subtag.signature('number', [
-        Subtag.argument('numbers', 'number', { repeat: [1, Infinity], flattenArrays: true, ifInvalid: NaN })
+        Subtag.argument('numbers', 'number').catch(NaN).repeat(1, Infinity, 'flatten')
     ], {
         description: 'Returns the largest entry out of `numbers`. If an array is provided, it will be expanded to its individual values.',
         exampleCode: '{max;50;2;65}',

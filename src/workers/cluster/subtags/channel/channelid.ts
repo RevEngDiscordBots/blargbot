@@ -19,7 +19,7 @@ export class ChannelIdSubtag extends Subtag {
         exampleOut: '111111111111111'
     })
     @Subtag.signature('snowflake', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Returns the ID of the given channel. If it cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',

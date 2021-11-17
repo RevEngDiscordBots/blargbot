@@ -18,13 +18,13 @@ export class CommitSubtag extends Subtag {
     @Subtag.signature('nothing', [
         Subtag.context()
     ], {
-        description: 'Commit provided `variables`',
-        exampleCode: '{set;var;Hello!}\n{commit;var}\n{set;var;GoodBye!}\n{rollback;var}\n{get;var}',
+        description: 'Commit all variables to the database',
+        exampleCode: '{set;var;Hello!}\n{commit}\n{set;var;GoodBye!}\n{rollback}\n{get;var}',
         exampleOut: 'Hello!'
     })
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('variableNames', 'string', { repeat: [1, Infinity] })
+        Subtag.argument('variableNames', 'string').repeat(1, Infinity)
     ], {
         description: 'Commit provided `variables`',
         exampleCode: '{set;var;Hello!}\n{commit;var}\n{set;var;GoodBye!}\n{rollback;var}\n{get;var}',

@@ -1,4 +1,4 @@
-import { BBTagContext, ParseResult, Subtag } from '@cluster/bbtag';
+import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { NotEnoughArgumentsError } from '@cluster/bbtag/errors';
 import { SubtagType } from '@cluster/utils';
 
@@ -38,7 +38,7 @@ export class ArgsSubtag extends Subtag {
     @Subtag.signature('string', [
         Subtag.context(),
         Subtag.argument('start', 'integer'),
-        Subtag.argument('end', 'integer', { ifInvalid: parseEnd })
+        Subtag.argument('end', 'integer').catch((err, val) => val.toLowerCase() === 'n' ? Infinity : err)
     ], {
         description: 'Gets all the words in the user input from `start` up to `end`. If `end` is `n` then all words after `start` will be returned. ' +
             '`start` and `end` will be sorted first if they arent in order.',
@@ -54,10 +54,4 @@ export class ArgsSubtag extends Subtag {
 
         return context.input.slice(start, end).join(' ');
     }
-}
-
-function parseEnd(value: string): ParseResult<number> {
-    if (value.toLowerCase() === 'n')
-        return { success: true, value: Infinity };
-    return { success: false };
 }

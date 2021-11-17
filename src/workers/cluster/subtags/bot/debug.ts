@@ -13,7 +13,7 @@ export class DebugSubtag extends Subtag {
     @Subtag.signature('nothing', [
         Subtag.context(),
         Subtag.subtagAST(),
-        Subtag.argument('text', 'string', { repeat: [1, Infinity] })
+        Subtag.argument('text', 'string').repeat(1, Infinity)
     ], {
         description: 'Adds the specified text to the debug output. This output is only shown via ' +
             '`tag debug`, `ccommand debug`, `tag test debug` and `ccommand test debug`.' +

@@ -11,7 +11,7 @@ export class ReasonSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('reason', 'string', { ifOmitted: undefined })
+        Subtag.argument('reason', 'string').allowOmitted()
     ], {
         description: 'Sets the reason for the next API call (ex. roleadd, roleremove, ban, etc.). If `reason` is empty the reason will be empty',
         exampleCode: '{reason;This will show up in the audit logs!}{roleadd;111111111111}',

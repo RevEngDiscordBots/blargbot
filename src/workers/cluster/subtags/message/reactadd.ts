@@ -18,7 +18,7 @@ export class ReactAddSubtag extends Subtag {
         Subtag.context(),
         Subtag.context(ctx => ctx.channel),
         Subtag.useValue(undefined),
-        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+        Subtag.argument('reactions', 'emoji').repeat(1, Infinity)
     ], {
         description: 'Adds `reactions` to the output message of this tag.',
         exampleCode: 'This will have reactions! {reactadd;🤔;👀}'
@@ -27,16 +27,16 @@ export class ReactAddSubtag extends Subtag {
         Subtag.context(),
         Subtag.context(ctx => ctx.channel),
         Subtag.argument('messageId', 'snowflake'),
-        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+        Subtag.argument('reactions', 'emoji').repeat(1, Infinity)
     ], {
         description: 'Adds `reactions` to `messageid` in the current channel.',
         exampleCode: '{reactadd;11111111111111111;🤔;👀}'
     })
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { noLookup: true, quiet: true }),
+        Subtag.argument('channel', 'channel', { noLookup: true, noErrors: true }),
         Subtag.argument('messageId', 'snowflake'),
-        Subtag.argument('reactions', 'emoji', { repeat: [1, Infinity] })
+        Subtag.argument('reactions', 'emoji').repeat(1, Infinity)
     ], {
         description: 'Adds `reactions` to `messageid` in `channelid`. `channelid` must be an ID, use of `{channelid} is advised`.',
         exampleCode: '{reactadd;11111111111111111;22222222222222222;🤔;👀}'

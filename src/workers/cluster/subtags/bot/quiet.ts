@@ -11,7 +11,7 @@ export class QuietSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('isQuiet', 'boolean', { ifOmitted: true, ifInvalid: undefined })
+        Subtag.argument('isQuiet', 'boolean').catch().allowOmitted()
     ], {
         description: 'Tells any subtags that rely on a `quiet` field to be/not be quiet based on `isQuiet. `isQuiet` must be a boolean',
         exampleCode: '{quiet} {usermention;cat}',

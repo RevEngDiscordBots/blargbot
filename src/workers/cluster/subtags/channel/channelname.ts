@@ -19,7 +19,7 @@ export class ChannelNameSubtag extends Subtag {
         exampleOut: 'This channel\'s name is test-channel'
     })
     @Subtag.signature('string', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Returns the name of the given `channel`. If it cannot be found returns `No channel found`, or nothing if `quiet` is `true`.',

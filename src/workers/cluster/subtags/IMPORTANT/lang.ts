@@ -6,7 +6,8 @@ export class LangSubtag extends Subtag {
         super({
             name: 'lang',
             category: SubtagType.LANG,
-            deprecated: true
+            deprecated: true,
+            hidden: true
         });
     }
 

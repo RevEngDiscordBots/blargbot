@@ -13,7 +13,7 @@ export class ChannelDeleteSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { customError: 'Channel does not exist' })
+        Subtag.argument('channel', 'channel', { parseError: 'Channel does not exist' })
     ], {
         description: 'Deletes the provided `channel`.',
         exampleCode: '{channeldelete;11111111111111111}'

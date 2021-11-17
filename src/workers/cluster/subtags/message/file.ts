@@ -12,7 +12,7 @@ export class FileSubtag extends Subtag {
     @Subtag.signature('nothing', [
         Subtag.context(),
         Subtag.argument('fileContent', 'string'),
-        Subtag.argument('filename', 'string', { ifOmitted: undefined })
+        Subtag.argument('filename', 'string').allowOmitted()
     ], {
         description: 'Sets the output attachment to the provided `fileContent` and `filename`. If `fileContent` starts with `buffer:`, the following text will be parsed as base64 to a raw buffer - useful for uploading images.',
         exampleCode: '{file;Hello, world!;readme.txt}',

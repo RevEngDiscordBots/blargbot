@@ -24,7 +24,7 @@ export class RollbackSubtag extends Subtag {
     })
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('variables', 'string', { repeat: [1, Infinity] })
+        Subtag.argument('variables', 'string').repeat(1, Infinity)
     ], {
         description: 'Rollback provided `variables`',
         exampleCode: '{set;var;Hello!}\n{commit;varr}\n{set;var;GoodBye!}\n{rollback;var}\n{get;var}',

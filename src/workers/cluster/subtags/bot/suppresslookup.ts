@@ -11,7 +11,7 @@ export class SuppressLookupSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('value', 'boolean', { ifOmitted: true })
+        Subtag.argument('value', 'boolean').ifOmittedUse(true)
     ], {
         description: 'Sets whether error messages in the lookup system (query canceled, nothing found) should be suppressed. `value` must be a boolean, and defaults to `true`.',
         exampleCode: '{suppresslookup}',

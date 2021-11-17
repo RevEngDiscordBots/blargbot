@@ -15,7 +15,7 @@ export class JsonKeysSubtag extends Subtag {
 
     @Subtag.signature('string[]', [
         Subtag.argument('json', 'json', { isVariableName: 'maybe' }),
-        Subtag.argument('path', 'string', { ifOmitted: undefined })
+        Subtag.argument('path', 'string').allowOmitted()
     ], {
         description: 'Retrieves all keys from provided the JSON object. ' +
             '`object` can be a JSON object, array, or string. If a string is provided, a variable with the same name will be used.\n' +

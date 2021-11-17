@@ -26,10 +26,10 @@ export class WaitMessageSubtags extends Subtag {
 
     @Subtag.signature('snowflake[]', [
         Subtag.context(),
-        Subtag.argument('channels', 'channel[]', { ifOmitted: '{channelid}', flattenArrays: true, noLookup: true }),
-        Subtag.argument('users', 'user[]', { ifOmitted: '{userid}', flattenArrays: true, noLookup: true }),
-        Subtag.argument('condition', 'ast', { ifOmitted: 'true' }),
-        Subtag.argument('timeout', 'number', { ifOmitted: 60 })
+        Subtag.argument('channels', 'channel[]', { flattenArray: true, noLookup: true }).ifOmittedUse('{channelid}'),
+        Subtag.argument('users', 'user[]', { flattenArray: true, noLookup: true }).ifOmittedUse('{userid}'),
+        Subtag.argument('condition', 'ast').ifOmittedUse('true'),
+        Subtag.argument('timeout', 'number').ifOmittedUse(60)
     ], {
         description: 'Pauses the command until a message is sent by any of the `users` in any of the `channels` which satisfies the `condition`.\n' +
             '`timeout` is the number of seconds before to wait and is limited to 300',

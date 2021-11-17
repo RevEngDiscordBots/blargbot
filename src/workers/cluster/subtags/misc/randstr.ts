@@ -1,39 +1,28 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, NotANumberError } from '@cluster/bbtag/errors';
-import { parse, SubtagType } from '@cluster/utils';
+import { Subtag } from '@cluster/bbtag';
+import { BBTagRuntimeError } from '@cluster/bbtag/errors';
+import { randChoose, SubtagType } from '@cluster/utils';
 
 export class RandStrSubtag extends Subtag {
     public constructor() {
         super({
             name: 'randstr',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['chars', 'length'],
-                    description: 'Creates a random string with characters from `chars` that is `length` characters long.',
-                    exampleCode: '{randstr;abcdefghijklmnopqrstuvwxyz;9}',
-                    exampleOut: 'kgzyqcvda',
-                    returns: 'string',
-                    execute: (ctx, [chars, count]) => this.randStr(ctx, chars.value, count.value)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
-    public randStr(
-        context: BBTagContext,
-        charsStr: string,
-        countStr: string
-    ): string {
-        const chars = charsStr.split('');
-        const count = parse.int(countStr, false) ?? parse.int(context.scopes.local.fallback ?? '', false);
-        if (count === undefined)
-            throw new NotANumberError(countStr);
-
+    @Subtag.signature('string', [
+        Subtag.argument('characters', 'string'),
+        Subtag.argument('length', 'integer', { useFallback: true })
+    ], {
+        description: 'Creates a random string with characters from `chars` that is `length` characters long.',
+        exampleCode: '{randstr;abcdefghijklmnopqrstuvwxyz;9}',
+        exampleOut: 'kgzyqcvda'
+    })
+    public randStr(chars: string, count: number): string {
         if (chars.length === 0)
             throw new BBTagRuntimeError('Not enough characters');
 
         const numberArray = [...Array(count).keys()]; // TODO: count should be limited here
-        return numberArray.map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+        return numberArray.map(() => randChoose(chars)).join('');
     }
 }

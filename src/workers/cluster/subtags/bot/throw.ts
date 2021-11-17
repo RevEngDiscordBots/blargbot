@@ -11,7 +11,7 @@ export class ThrowSubtag extends Subtag {
     }
 
     @Subtag.signature('error', [
-        Subtag.argument('error', 'string', { ifOmitted: 'A custom error occurred' })
+        Subtag.argument('error', 'string').ifOmittedUse('A custom error occurred')
     ], {
         description: 'Throws `error`.',
         exampleCode: '{throw;Custom Error}',

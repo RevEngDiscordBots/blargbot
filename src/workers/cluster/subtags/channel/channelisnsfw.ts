@@ -19,7 +19,7 @@ export class ChannelIsNsfw extends Subtag {
         exampleOut: 'fluffy bunnies'
     })
     @Subtag.signature('boolean', [
-        Subtag.argument('channel', 'channel', { quietErrorDisplay: '' }),
+        Subtag.argument('channel', 'channel', { quietParseError: '' }),
         Subtag.quietArgument().noEmit()
     ], {
         description: 'Checks if `channel` is a NSFW channel. If it cannot be found returns `No channel found`, or `false` if `quiet` is `true`.',

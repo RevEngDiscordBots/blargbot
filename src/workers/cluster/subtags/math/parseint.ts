@@ -10,7 +10,7 @@ export class ParseIntSubtag extends Subtag {
     }
 
     @Subtag.signature('number', [
-        Subtag.argument('number', 'integer', { ifInvalid: NaN })
+        Subtag.argument('number', 'integer').catch(NaN)
     ], {
         description: 'Returns an integer from `text`. If it wasn\'t a number, returns `NaN`.',
         exampleCode: '{parseint;abcd} {parseint;1234} {parseint;12cd}',

@@ -14,7 +14,7 @@ export class SendSubtag extends Subtag {
 
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { guard: guard.isTextableChannel }),
+        Subtag.argument('channel', 'channel').guard(guard.isTextableChannel),
         Subtag.useValue(undefined),
         Subtag.argument('embed', 'embed[]'),
         Subtag.useValue(undefined),
@@ -27,9 +27,9 @@ export class SendSubtag extends Subtag {
     })
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { guard: guard.isTextableChannel }),
+        Subtag.argument('channel', 'channel').guard(guard.isTextableChannel),
         Subtag.argument('message', 'string'),
-        Subtag.argument('embed', 'embed[]', { ifOmitted: undefined, allowMalformed: true }),
+        Subtag.argument('embed', 'embed[]', { allowMalformed: true }).allowOmitted(),
         Subtag.useValue(undefined),
         Subtag.useValue(undefined)
     ], {
@@ -40,11 +40,11 @@ export class SendSubtag extends Subtag {
     })
     @Subtag.signature('snowflake', [
         Subtag.context(),
-        Subtag.argument('channel', 'channel', { guard: guard.isTextableChannel }),
+        Subtag.argument('channel', 'channel').guard(guard.isTextableChannel),
         Subtag.argument('message', 'string'),
-        Subtag.argument('embed', 'embed[]', { ifOmitted: undefined, allowMalformed: true }),
+        Subtag.argument('embed', 'embed[]', { allowMalformed: true }).allowOmitted(),
         Subtag.argument('fileContent', 'string'),
-        Subtag.argument('fileName', 'string', { ifOmitted: undefined })
+        Subtag.argument('fileName', 'string').allowOmitted()
     ], {
         description: 'Sends a message containing `message` and `embed` to `channel` with an attachment, and returns the message id.\n' +
             'If `fileContent` starts with `buffer:` then the following text will be parsed as base64 to a raw buffer.\n' +

@@ -1,29 +1,33 @@
 import { Subtag } from '@cluster/bbtag';
-import { bbtagUtil, SubtagType } from '@cluster/utils';
+import { SubtagType } from '@cluster/utils';
 
 export class LengthSubtag extends Subtag {
     public constructor() {
         super({
             name: 'length',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['value'],
-                    description: 'Gives the amount of characters in `value`, or the number of elements if it is an array.',
-                    exampleCode: 'What you said is {length;{args}} chars long.',
-                    exampleIn: 'Hello',
-                    exampleOut: 'What you said is 5 chars long.',
-                    returns: 'number',
-                    execute: (_, [value]) => this.getLength(value.value)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
-    public getLength(value: string): number {
-        const arr = bbtagUtil.tagArray.deserialize(value, false);
-        if (arr !== undefined)
-            return arr.length;
-        return value.length;
+    @Subtag.signature('number', [
+        Subtag.argument('array', 'json[]')
+    ], {
+        description: 'Gives the amount of characters in `value`, or the number of elements if it is an array.',
+        exampleCode: '{set;~myArray;a;b;c}\n~myArray is {length;{get;~myArray}} elements long.',
+        exampleOut: '~myArray is 3 elements long.'
+    })
+    public getArrayLength(array: JToken[]): number {
+        return array.length;
+    }
+
+    @Subtag.signature('number', [
+        Subtag.argument('text', 'string')
+    ], {
+        description: 'Gives the amount of characters in `value`, or the number of elements if it is an array.',
+        exampleCode: 'The alphabet is {length;abcdefghijklmnopqrstuvwxyz} letters long.',
+        exampleOut: 'The alphabet is 26 letters long.'
+    })
+    public getStringLength(text: string): number {
+        return text.length;
     }
 }

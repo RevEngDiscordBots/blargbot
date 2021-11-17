@@ -11,10 +11,10 @@ export class NumFormatSubtag extends Subtag {
     }
 
     @Subtag.signature('string', [
-        Subtag.argument('number', 'number', { ifInvalid: NaN }),
-        Subtag.argument('rountTo', 'number', { ifInvalid: undefined }),
-        Subtag.argument('decimal', 'string', { ifOmitted: '.' }),
-        Subtag.argument('thousands', 'string', { ifOmitted: '' })
+        Subtag.argument('number', 'number').catch(NaN),
+        Subtag.argument('rountTo', 'number').catch(),
+        Subtag.argument('decimal', 'string').ifOmittedUse('.'),
+        Subtag.argument('thousands', 'string').ifOmittedUse('')
     ], {
         description: 'Rounds `number` to `roundTo` digits. Uses `decimal` as the decimal separator and `thousands` for the thousands separator. To skip `roundTo` or `decimal` leave them empty.',
         exampleCode: '{numformat;3.1415;4;,}\n{numformat;100000;;;.}',

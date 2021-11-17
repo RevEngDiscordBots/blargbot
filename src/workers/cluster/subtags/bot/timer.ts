@@ -13,7 +13,7 @@ export class TimerSubtag extends Subtag {
     @Subtag.signature('nothing', [
         Subtag.context(),
         Subtag.argument('code', 'source'),
-        Subtag.argument('duration', 'duration', { guard: duration => duration.asMilliseconds() > 0 })
+        Subtag.argument('duration', 'duration').guard(duration => duration.asMilliseconds() > 0)
     ], {
         description: 'Executes `code` after `duration`. Three timers are allowed per custom command, with no recursive timers.',
         exampleCode: '{timer;Hello!;20s}',

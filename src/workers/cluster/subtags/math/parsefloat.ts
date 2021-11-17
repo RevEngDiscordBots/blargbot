@@ -10,7 +10,7 @@ export class ParseFloattSubtag extends Subtag {
     }
 
     @Subtag.signature('number', [
-        Subtag.argument('number', 'number', { ifInvalid: NaN })
+        Subtag.argument('number', 'number').catch(NaN)
     ], {
         description: 'Returns an floating point number from `text`. If it wasn\'t a number, returns `NaN`.',
         exampleCode: '{parsefloat;abcd} {parsefloat;12.34} {parsefloat;1.2cd}',

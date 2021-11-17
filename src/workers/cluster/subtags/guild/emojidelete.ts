@@ -13,7 +13,7 @@ export class EmojiDeleteSubtag extends Subtag {
 
     @Subtag.signature('nothing', [ //TODO meaningful output like `true`/`false`,
         Subtag.context(),
-        Subtag.argument('emoji', 'guildEmoji', { ifInvalid: undefined })
+        Subtag.argument('emoji', 'guildEmoji').catch()
     ], {
         description: 'Deletes an emoji with the provided `id`',
         exampleCode: '{emojidelete;11111111111111111}',

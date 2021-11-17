@@ -20,8 +20,8 @@ export class RequestSubtag extends Subtag {
     @Subtag.signature('json', [
         Subtag.context(),
         Subtag.argument('url', 'string'),
-        Subtag.argument('options', 'string', { ifOmitted: undefined }),
-        Subtag.argument('data', 'string', { ifOmitted: undefined })
+        Subtag.argument('options', 'string').allowOmitted(),
+        Subtag.argument('data', 'string').allowOmitted()
     ], {
 
         description: 'Performs a HTTP request to `url`, with provided `options` and `data`.' +

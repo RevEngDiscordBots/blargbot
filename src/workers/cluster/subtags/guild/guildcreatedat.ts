@@ -13,7 +13,7 @@ export class GuildCreateDat extends Subtag {
 
     @Subtag.signature('string', [
         Subtag.guild(),
-        Subtag.argument('format', 'string', { ifOmitted: undefined })
+        Subtag.argument('format', 'string').allowOmitted()
     ], {
         description: 'Returns the date the current guild was created, in UTC+0. If a `format` code is specified, the date is ' +
             'formatted accordingly. Leave blank for default formatting. See the [moment documentation](http://momentjs.com/docs/#/displaying/format/) for more information.',

@@ -11,7 +11,7 @@ export class FallBackSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('value', 'string', { ifOmitted: undefined })
+        Subtag.argument('value', 'string').allowOmitted()
     ], {
         description: 'Should any tag fail to parse, it will be replaced with `message` instead of an error.',
         exampleCode: '{fallback;This tag failed} {randint}',

@@ -15,9 +15,9 @@ export class ModlogSubtag extends Subtag {
         Subtag.context(),
         Subtag.argument('action', 'string'),
         Subtag.argument('user', 'user'),
-        Subtag.argument('moderator', 'user', { ifInvalid: undefined, ifOmitted: undefined }),
-        Subtag.argument('reason', 'string', { ifOmitted: undefined }),
-        Subtag.argument('color', 'color', { ifInvalid: undefined, ifOmitted: undefined })
+        Subtag.argument('moderator', 'user').catch().allowOmitted(),
+        Subtag.argument('reason', 'string').allowOmitted(),
+        Subtag.argument('color', 'color').catch().allowOmitted()
     ], {
         description: 'Creates a custom modlog entry with the given `action` and `user` with `reason`. ' +
             '`color` can be a [HTML color](https://www.w3schools.com/colors/colors_names.asp), hex, (r,g,b) or a valid color number. .',

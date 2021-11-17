@@ -12,7 +12,7 @@ export class EmbedSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.context(),
-        Subtag.argument('embeds', 'embed', { repeat: [1, Infinity], allowMalformed: true, flattenArrays: true })
+        Subtag.argument('embeds', 'embed', { allowMalformed: true }).repeat(1, Infinity, 'flatten')
     ], {
         description: 'Takes whatever input you pass to `embed` and attempts to form an embed from it. `embed` must be a valid json embed object. Multiple embeds can be provided.\n' +
             'This subtag works well with `{embedbuild}`. If attempting to use inside of a `{send}`, `{edit}` or `{dm}`, you should not include `{embed}`, ' +

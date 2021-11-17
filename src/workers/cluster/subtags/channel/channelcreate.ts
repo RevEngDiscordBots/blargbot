@@ -15,8 +15,8 @@ export class ChannelCreateSubtag extends Subtag {
     @Subtag.signature('snowflake', [
         Subtag.context(),
         Subtag.argument('name', 'string'),
-        Subtag.argument('type', 'string', { ifOmitted: 'text' }),
-        Subtag.argument('options', 'string', { ifOmitted: '{}' }) // TODO integrate mapping framework somehow?
+        Subtag.argument('type', 'string').ifOmittedUse('text'),
+        Subtag.argument('options', 'string').ifOmittedUse('{}', false) // TODO integrate mapping framework somehow?
     ], {
         description: 'Creates a channel with the specified `options` of type `type`' +
             '`options` is a JSON object, containing any or all of the following properties:\n' +

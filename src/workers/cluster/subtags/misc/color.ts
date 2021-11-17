@@ -25,39 +25,27 @@ export class ColorSubtag extends Subtag {
         super({
             name: 'color',
             category: SubtagType.MISC,
-            desc: 'If `inputFormat` is omitted or left empty, the format of `color` is automatically calculated, but might be innaccurate. For accuracy and known `color` formats use `inputFormat`. It converts all ways between `rgb`, `hsl`, `hsv`, `hwb`, `cmyk`, `ansi16`, `hex` strings, and CSS `keyword`s (will round to closest).', //TODO document the other formats too perhaps? As these are supported/working. (lab, lch, ansi256, hcg, apple, gray, xyz)
-            definition: [
-                {
-                    parameters: ['color', 'outputFormat?:hex'],
-                    description: 'Converts a color to `outputFormat`.',
-                    exampleCode: '{color;#4286f4;RGB}',
-                    exampleOut: '[66,134,244]',
-                    returns: 'string',
-                    execute: (ctx, [color, format]) => this.parseColor(ctx, color.value, format.value, undefined)
-                },
-                {
-                    parameters: ['color', 'outputFormat:hex', 'inputFormat'],
-                    description: 'Converts a color of `inputFormat` to `outputFormat`. If `inputFormat` is left empty, it will be automatically calculated.',
-                    exampleCode: '{color;[66,134,244];hex;RGB}',
-                    exampleOut: '#4286f4',
-                    returns: 'string',
-                    execute: (ctx, [color, outFormat, inFormat]) => this.parseColor(ctx, color.value, outFormat.value, inFormat.value)
-                }
-            ]
+            desc: 'If `inputFormat` is omitted or left empty, the format of `color` is automatically calculated, but might be innaccurate. For accuracy and known `color` formats use `inputFormat`. It converts all ways between `rgb`, `hsl`, `hsv`, `hwb`, `cmyk`, `ansi16`, `hex` strings, and CSS `keyword`s (will round to closest).'
+            //TODO document the other formats too perhaps? As these are supported/working. (lab, lch, ansi256, hcg, apple, gray, xyz)
         });
     }
 
-    public async parseColor(
-        context: BBTagContext,
-        colorStr: string,
-        outputStr: string,
-        inputStr: string | undefined
-    ): Promise<string> {
+    @Subtag.signature('string', [
+        Subtag.context(),
+        Subtag.argument('color', 'string'),
+        Subtag.argument('outputFormat', 'string').ifOmittedUse('hex'),
+        Subtag.argument('inputFormat', 'string').allowOmitted()
+    ], {
+        description: 'Converts a color to `outputFormat`. If `inputFormat` is left empty, it will be automatically calculated.',
+        exampleCode: '{color;#4286f4;RGB}',
+        exampleOut: '[66,134,244]'
+    })
+    public async parseColor(context: BBTagContext, colorStr: string, outputStr: string, inputStr?: string): Promise<string> {
         if (colorStr === '')
             throw new BBTagRuntimeError('Invalid color', 'value was empty');
 
-        const arr = await getArray(context, colorStr);
-        const input = arr?.v.map(elem => elem?.toString()).join(',') ?? colorStr;
+        const arr = await getArray(context, colorStr, false);
+        const input = arr?.map(elem => elem?.toString()).join(',') ?? colorStr;
         let parsedInput;
         const match = /^\(?(\d{1,3}),(\d{1,3}),(\d{1,3})\)?$/.exec(input);
         if (match !== null) {
@@ -119,6 +107,5 @@ export class ColorSubtag extends Subtag {
         if (converted.startsWith('#'))
             converted = converted.replace('#', '');
         return converted;
-
     }
 }

@@ -1,4 +1,4 @@
-import { BBTagContext, Subtag, tagVariableScopes } from '@cluster/bbtag';
+import { Subtag, tagVariableScopes } from '@cluster/bbtag';
 import { BBTagRef } from '@cluster/types';
 import { SubtagType } from '@cluster/utils';
 
@@ -39,7 +39,7 @@ export class SetSubtag extends Subtag {
 
     @Subtag.signature('nothing', [
         Subtag.argument('variable', 'variable'),
-        Subtag.argument('value', 'string', { repeat: [0, Infinity] }) // TODO: Maybe json data type?
+        Subtag.argument('value', 'string').repeat(2, Infinity) // TODO: Maybe json data type?
     ], {
         description: 'Stores an array under `name`.' +
             '\nWhen getting the array, you\'ll notice it retrieved an object, ' +
