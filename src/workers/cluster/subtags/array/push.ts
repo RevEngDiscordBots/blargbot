@@ -19,7 +19,9 @@ export class PushSubtag extends Subtag {
         exampleOut: ''
     })
     public pushVariable(array: BBTagRef<JArray>, values: string[]): void {
-        array.get().push(...values);
+        const arr = array.get();
+        arr.push(...values);
+        array.set(arr);
     }
 
     @Subtag.signature('json[]', [

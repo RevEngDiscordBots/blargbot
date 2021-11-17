@@ -62,14 +62,14 @@ export class OperatorSubtag extends Subtag {
     }
 
     @Subtag.signature('boolean', [
-        Subtag.subtagName().guard(numberCompareOperators, val => new InvalidOperatorError(val, 'comparison')),
+        Subtag.subtagName().guard(ordinalCompareOperators, val => new InvalidOperatorError(val, 'comparison')),
         Subtag.argument('values', 'string').repeat(1, Infinity, 'flatten')
     ], {
-        description: 'Comparison operators behave in a similar way to `{bool}`, but can accept more than two values. If an argument is an array, this array will be flattened (except for `startswith, includes, contains and endswith`). Because it can accept more than two values the logic is a little different.',
+        description: 'Ordinal comparison operators behave in a similar way to `{bool}`, but can accept more than two values. If an argument is an array, this array will be flattened (except for `startswith, includes, contains and endswith`). Because it can accept more than two values the logic is a little different.',
         exampleCode: '(1 == 2 && 2 == 3 && 3 == 4) = {==;1;2;3;4}\n(3 > 2 && 2 > 1 && 1 > 0) = {>;3;2;1}',
         exampleOut: '(1 == 2 && 2 == 3 && 3 == 4) = false\n(3 > 2 && 2 > 1 && 1 > 0) = true'
     })
-    public invokeNumericCompareOperator(operator: OrdinalCompareOperator, values: string[]): boolean {
+    public invokeOrdinalCompareOperator(operator: OrdinalCompareOperator, values: string[]): boolean {
         if (values.length <= 1)
             return false;
 
@@ -84,4 +84,4 @@ const { all: allOperators, logic, numeric, stringCompare, ordinalCompare } = bbt
 const logicOperators = Object.keys(logic).filter((value): value is Exclude<LogicOperator, '^'> => value !== '^');
 const numericOperators = Object.keys(numeric);
 const stringCompareOperators = Object.keys(stringCompare);
-const numberCompareOperators = Object.keys(ordinalCompare);
+const ordinalCompareOperators = Object.keys(ordinalCompare);

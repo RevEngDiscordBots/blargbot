@@ -6,20 +6,17 @@ export class VoidSubtag extends Subtag {
         super({
             name: 'void',
             category: SubtagType.MISC,
-            aliases: ['null'],
-            definition: [
-                {
-                    parameters: ['code?'],
-                    description: 'Executes `code` but does not return the output from it. Useful for silent functionality',
-                    exampleCode: '{void;This won\'t be output!}',
-                    exampleOut: '',
-                    returns: 'nothing',
-                    execute: () => this.returnNothing()
-                }
-            ]
+            aliases: ['null']
         });
     }
 
+    @Subtag.signature('nothing', [
+        Subtag.argument('anything', 'string').noEmit()
+    ], {
+        description: 'Executes `code` but does not return the output from it. Useful for silent functionality',
+        exampleCode: '{void;This won\'t be output!}',
+        exampleOut: ''
+    })
     public returnNothing(): void {
         /*NOOP*/
     }

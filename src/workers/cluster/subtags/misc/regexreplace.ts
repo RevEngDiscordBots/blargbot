@@ -1,44 +1,40 @@
-import { BBTagContext, RegexSubtag } from '@cluster/bbtag';
+import { BBTagContext, Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
 
-export class RegexReplaceSubtag extends RegexSubtag {
+export class RegexReplaceSubtag extends Subtag {
     public constructor() {
         super({
             name: 'regexreplace',
             category: SubtagType.MISC,
             desc: 'Any bbtag in `regex` will not be resolved. Please consider using `{apply}` for a dynamic regex. ' +
                 '`regex` will only succeed to compile if it is deemed a safe regular expression ' +
-                '(safe regexes do not run in exponential time for any input) and is less than 2000 characters long.',
-            definition: [
-                {
-                    parameters: ['~regex', 'replaceWith'],
-                    description: 'Replaces the `regex` phrase with `replacewith`. This is executed on the output of the containing tag.',
-                    exampleCode: 'I like to eat cheese. {regexreplace;/cheese/;pie}',
-                    exampleOut: 'I like to eat pie.',
-                    returns: 'nothing',
-                    execute: (ctx, [regex, replaceWith]) => this.setOutputReplacement(ctx, regex.raw, replaceWith.value)
-                },
-                {
-                    parameters: ['text', '~regex', 'replaceWith'],
-                    description: 'Replace the `regex` phrase with `replaceWith`. This is executed on `text`.',
-                    exampleCode: 'I like {regexreplace;to consume;/o/gi;a} cheese. {regexreplace;/e/gi;n}',
-                    exampleOut: 'I likn ta cansumn chnnsn.',
-                    returns: 'string',
-                    execute: (_, [text, regex, replaceWith]) => this.regexReplace(text.value, regex.raw, replaceWith.value)
-                }
-            ]
+                '(safe regexes do not run in exponential time for any input) and is less than 2000 characters long.'
         });
     }
 
-    public setOutputReplacement(context: BBTagContext, regexStr: string, replacement: string): void {
-        context.state.replace = {
-            regex: this.createRegex(regexStr),
-            with: replacement
-        };
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('regex', 'regex'),
+        Subtag.argument('replaceWith', 'string')
+    ], {
+        description: 'Replaces the `regex` phrase with `replacewith`. This is executed on the output of the containing tag.',
+        exampleCode: 'I like to eat cheese. {regexreplace;/cheese/;pie}',
+        exampleOut: 'I like to eat pie.'
+    })
+    public setOutputReplacement(context: BBTagContext, regex: RegExp, replacement: string): void {
+        context.state.replace = { regex: regex, with: replacement };
     }
 
-    public regexReplace(text: string, regexStr: string, replaceWith: string): string {
-        const regex = this.createRegex(regexStr);
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string'),
+        Subtag.argument('regex', 'regex'),
+        Subtag.argument('replaceWith', 'string')
+    ], {
+        description: 'Replace the `regex` phrase with `replaceWith`. This is executed on `text`.',
+        exampleCode: 'I like {regexreplace;to consume;/o/gi;a} cheese. {regexreplace;/e/gi;n}',
+        exampleOut: 'I likn ta cansumn chnnsn.'
+    })
+    public regexReplace(text: string, regex: RegExp, replaceWith: string): string {
         return text.replace(regex, replaceWith);
     }
 }

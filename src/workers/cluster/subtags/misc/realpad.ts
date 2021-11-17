@@ -1,56 +1,44 @@
 import { Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, NotANumberError } from '@cluster/bbtag/errors';
-import { parse, SubtagType } from '@cluster/utils';
+import { BBTagRuntimeError } from '@cluster/bbtag/errors';
+import { SubtagType } from '@cluster/utils';
 
 export class RealPadSubtag extends Subtag {
     public constructor() {
         super({
             name: 'realpad',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['text', 'length'],
-                    description: 'Pads `text` using space until it has `length` characters. Spaces are added on the right side.',
-                    exampleCode: '{realpad;Hello;10} world!',
-                    exampleOut: 'Hello      world!',
-                    returns: 'string',
-                    execute: (_, [text, length]) => this.realPad(text.value, length.value, ' ', 'right')
-                },
-                {
-                    parameters: ['text', 'length', 'filler', 'direction?:right'],
-                    description: 'Pads `text` using `filler` until it has `length` characters. `filler` is applied to the  `direction` of `text`. `filler` defaults to space.',
-                    exampleCode: '{realpad;ABC;6;0;left}',
-                    exampleOut: '000ABC',
-                    returns: 'string',
-                    execute: (_, [text, length, filler, direction]) => this.realPad(text.value, length.value, filler.value, direction.value.toLowerCase())
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
-    public realPad(
-        text: string,
-        lengthStr: string,
-        filler: string,
-        directionStr: string
-    ): string {
-        const length = parse.int(lengthStr, false);
-        if (filler === '')
-            filler = ' ';
-        if (directionStr !== 'right' && directionStr !== 'left')
-            throw new BBTagRuntimeError('Invalid direction', directionStr + 'is invalid');
-        const direction: 'right' | 'left' = directionStr;
-
-        if (length === undefined)
-            throw new NotANumberError(lengthStr);
-
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string'),
+        Subtag.argument('length', 'number'),
+        Subtag.useValue(' '),
+        Subtag.useValue('right')
+    ], {
+        description: 'Pads `text` using space until it has `length` characters. Spaces are added on the right side.',
+        exampleCode: '{realpad;Hello;10} world!',
+        exampleOut: 'Hello      world!'
+    })
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string'),
+        Subtag.argument('length', 'number'),
+        Subtag.argument('filler', 'string').guard(str => str.length === 1, 'Filler must be 1 character').ifOmittedUse(' '),
+        Subtag.argument('direction', 'string').guard(['left', 'right'] as const, val => new BBTagRuntimeError('Invalid direction', `${val} is invalid`))
+    ], {
+        description: 'Pads `text` using `filler` until it has `length` characters. `filler` is applied to the  `direction` of `text`. `filler` defaults to space.',
+        exampleCode: '{realpad;ABC;6;0;left}',
+        exampleOut: '000ABC'
+    })
+    public realPad(text: string, length: number, filler: string, direction: 'left' | 'right'): string {
         if (filler.length !== 1)
             throw new BBTagRuntimeError('Filler must be 1 character');
 
         const padAmount = Math.max(0, length - text.length);
 
-        if (direction === 'right')
-            return text + filler.repeat(padAmount);
-        return filler.repeat(padAmount) + text;
+        switch (direction) {
+            case 'right': return text + filler[0].repeat(padAmount);
+            case 'left': return filler[0].repeat(padAmount) + text;
+        }
     }
 }

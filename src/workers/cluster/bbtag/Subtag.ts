@@ -47,7 +47,7 @@ export abstract class Subtag implements SubtagOptions {
         }
     }
 
-    public enrichDocs: never;
+    private readonly enrichDocs = 5;
 
     public static signature<Return extends SubtagReturnType, Parameters extends readonly SubtagParameterDescriptor[] | []>(returns: Return, parameters: Parameters, details: SubtagSignatureOptions): SubtagSignatureDecorator<Return, Parameters> {
         returns;
@@ -105,6 +105,15 @@ export abstract class Subtag implements SubtagOptions {
         throw new Error('NotImplemented');
     }
 
+    public static useFactory<T extends Primitive>(factory: () => Awaitable<T>): SubtagParameterDescriptor<T, undefined>
+    public static useFactory<T>(factory: () => Awaitable<T>): SubtagParameterDescriptor<T, undefined>
+    public static useFactory<T>(factory: () => Awaitable<T>): SubtagParameterDescriptor<T, undefined> {
+        factory;
+        throw new Error('NotImplemented');
+    }
+
+    public static useValue<T extends Primitive>(value: T): SubtagParameterDescriptor<T, undefined>
+    public static useValue<T>(value: T): SubtagParameterDescriptor<T, undefined>
     public static useValue<T>(value: T): SubtagParameterDescriptor<T, undefined> {
         value;
         throw new Error('NotImplemented');
@@ -227,7 +236,6 @@ type SubtagReturnTypeMap =
         'error': never;
         'loop': Iterated<JToken>;
         '(string|error)[]': Iterated<JToken>;
-        'number|boolean': number | boolean;
     }
 
 type SubtagReturnType = keyof SubtagReturnTypeMap;
@@ -267,6 +275,7 @@ type SubtagArgumentTypeMap =
         'json?': JToken | undefined;
         'source': string;
         'variable': BBTagRef<JToken | undefined>;
+        'regex': RegExp;
     }
 
 type SubtagArgumentType = keyof SubtagArgumentTypeMap;
@@ -291,5 +300,5 @@ type SubtagSignatureDecorator<Return extends SubtagReturnType, Parameters extend
     = ConstrainedMethodDecorator<Subtag, ParameterTypes<Parameters>, Awaitable<SubtagReturnTypeMap[Return]>>
 
 type SubtagParameterGroupValue<Parameters extends ReadonlyArray<SubtagParameterDescriptor<unknown, string>>> = {
-    [P in Parameters[number]as P['name']]: ReturnType<P['getValue']>
+    [P in Parameters[number]as P['name']]: Awaited<ReturnType<P['getValue']>>
 }

@@ -1,34 +1,45 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { bbtagUtil, SubtagType } from '@cluster/utils';
+import { Subtag } from '@cluster/bbtag';
+import { BBTagRef } from '@cluster/types';
+import { SubtagType } from '@cluster/utils';
 
 export class ReverseSubtag extends Subtag {
     public constructor() {
         super({
             name: 'reverse',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['text'],
-                    description: 'Reverses the order of `text`. If `text` is an array, the array will be reversed. If `{get}` is used with an array, this will modify the original array.',
-                    exampleCode: '{reverse;palindrome}',
-                    exampleOut: 'emordnilap',
-                    returns: 'string',
-                    execute: (ctx, [text]) => this.reverse(ctx, text.value)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
-    public async reverse(context: BBTagContext, input: string): Promise<string> {
-        const arr = await bbtagUtil.tagArray.getArray(context, input);
-        if (arr === undefined)
-            return input.split('').reverse().join('');
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string')
+    ], {
+        description: 'Reverses the order of `text`.',
+        exampleCode: '{reverse;palindrome}',
+        exampleOut: 'emordnilap'
+    })
+    public reverseString(text: string): string {
+        return text.split('').reverse().join('');
+    }
 
-        arr.v = arr.v.reverse();
-        if (arr.n === undefined)
-            return bbtagUtil.tagArray.serialize(arr.v);
+    @Subtag.signature('json[]', [
+        Subtag.argument('array', 'json[]')
+    ], {
+        description: 'Reverses the order of `array`.',
+        exampleCode: '{reverse;[1,2,3,4,5]}',
+        exampleOut: '[5,4,3,2,1]'
+    })
+    public reverseArrayLiteral(array: JArray): JArray {
+        return array.reverse();
+    }
 
-        await context.variables.set(arr.n, arr.v);
-        return '';
+    @Subtag.signature('nothing', [
+        Subtag.argument('array', 'json[]*')
+    ], {
+        description: 'Reverses the order of `array` and ',
+        exampleCode: '{set;~myarray;a;b;c;d;e}\n{reverse;~myarray}\n{get;~myarray}',
+        exampleOut: '{"n":"~myarray","v":["e","d","c","b","a"]}'
+    })
+    public reverseArrayVariable(array: BBTagRef<JArray>): void {
+        array.set(array.get().reverse());
     }
 }

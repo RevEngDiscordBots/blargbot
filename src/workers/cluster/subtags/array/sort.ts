@@ -20,7 +20,9 @@ export class SortSubtag extends Subtag {
     })
     public sortReference(array: BBTagRef<JArray>, descending: boolean): void {
         const dir = descending ? -1 : 1;
-        array.get().sort((a, b) => dir * compare(parse.string(a), parse.string(b)));
+        const arr = array.get();
+        arr.sort((a, b) => dir * compare(parse.string(a), parse.string(b)));
+        array.set(arr);
     }
 
     @Subtag.signature('json[]', [

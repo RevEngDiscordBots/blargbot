@@ -5,20 +5,17 @@ export class UriDecodeSubtag extends Subtag {
     public constructor() {
         super({
             name: 'uridecode',
-            category: SubtagType.MISC,
-            definition: [
-                {
-                    parameters: ['text'],
-                    description: 'Decodes `text` from URI format.',
-                    exampleCode: '{uridecode;Hello%20world}',
-                    exampleOut: 'Hello world!',
-                    returns: 'string',
-                    execute: (_, [text]) => this.decodeUri(text.value)
-                }
-            ]
+            category: SubtagType.MISC
         });
     }
 
+    @Subtag.signature('string', [
+        Subtag.argument('text', 'string')
+    ], {
+        description: 'Decodes `text` from URI format.',
+        exampleCode: '{uridecode;Hello%20world}',
+        exampleOut: 'Hello world!'
+    })
     public decodeUri(text: string): string {
         return decodeURIComponent(text);
     }
