@@ -18,16 +18,13 @@ export class AirtableSuggestorsTable extends AirtableDbTable<Suggestor> implemen
         const current = await this.afind('ID', userid);
         if (current === undefined) {
             const created = await this.acreate({
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                ID: userid,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                Username: username
+                ['ID']: userid,
+                ['Username']: username
             });
             return created?.id;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        await this.aupdate(current.id, { Username: username });
+        await this.aupdate(current.id, { ['Username']: username });
 
         return current.id;
     }

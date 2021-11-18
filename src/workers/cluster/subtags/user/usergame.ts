@@ -1,47 +1,25 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { UserNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { GuildMember } from 'discord.js';
 
 export class UserGameSubtag extends Subtag {
     public constructor() {
         super({
             name: 'usergame',
             category: SubtagType.USER,
-            desc: 'If no game is being played, this will return \'nothing\'',
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns the game the executing user is playing. ',
-                    exampleCode: 'You are playing {usergame}',
-                    exampleOut: 'You are playing with bbtag',
-                    returns: 'string',
-                    execute: (ctx) => this.getUserGame(ctx, ctx.user.id, true)
-                },
-                {
-                    parameters: ['user', 'quiet?'],
-                    description: 'Returns the game `user` is playing. If `user` can\'t be found it will simply return nothing.',
-                    exampleCode: 'Stupid cat is playing {usergame;Stupid cat}',
-                    exampleOut: 'Stupid cat is playing nothing',
-                    returns: 'string',
-                    execute: (ctx, [userId, quiet]) => this.getUserGame(ctx, userId.value, quiet.value !== '')
-                }
-            ]
+            desc: 'If no game is being played, this will return \'nothing\''
         });
     }
 
-    public async getUserGame(
-        context: BBTagContext,
-        userId: string,
-        quiet: boolean
-    ): Promise<string> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const member = await context.queryMember(userId, { noLookup: quiet });
-
-        if (member === undefined) {
-            throw new UserNotFoundError(userId)
-                .withDisplay(quiet ? '' : undefined);
-        }
-
-        return member.presence?.activities[0]?.name ?? 'nothing';
+    @Subtag.signature('string', [
+        Subtag.argument('user', 'member', { quietParseError: '' }).ifOmittedUse('{userid}'),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns `user`\'s discriminator. If `user` can\'t be found it will simply return nothing.',
+        exampleCode: 'Stupid cat\'s discriminator is {userdiscrim;Stupid cat}',
+        exampleOut: 'Stupid cat\'s discriminator is 8160'
+    })
+    public getUserGame(user: GuildMember): string {
+        return user.presence?.activities[0]?.name ?? 'nothing';
     }
 }

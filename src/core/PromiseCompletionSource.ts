@@ -1,9 +1,7 @@
 export class PromiseCompletionSource<T> {
-    /* eslint-disable @typescript-eslint/explicit-member-accessibility */
     #resolve?: (value: Awaitable<T>) => void;
     #reject?: (reason?: unknown) => void;
     #state: 'pending' | 'resolved' | 'rejected';
-    /* eslint-enable @typescript-eslint/explicit-member-accessibility */
     public readonly promise: Promise<T>;
     public get state(): 'pending' | 'resolved' | 'rejected' { return this.#state; }
 

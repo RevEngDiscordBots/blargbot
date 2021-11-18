@@ -1,6 +1,7 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, UserNotFoundError } from '@cluster/bbtag/errors';
-import { parse, SubtagType } from '@cluster/utils';
+import { BBTagRuntimeError } from '@cluster/bbtag/errors';
+import { SubtagType } from '@cluster/utils';
+import { MessageEmbedOptions, User } from 'discord.js';
 
 const dmCache: DMCache = {};
 
@@ -8,39 +9,38 @@ export class DMSubtag extends Subtag {
     public constructor() {
         super({
             name: 'dm',
-            category: SubtagType.USER,
-            definition: [
-                {
-                    parameters: ['user', 'message|embed', 'embed?'],
-                    description: 'DMs `user` the given `message` and `embed`. At least one of `message` and `embed` must be provided. If `message|embed` is a valid object, it will be treated as embed. ' +
-                        'You may only send one DM per execution. Requires author to be staff, and the user to be on the current guild.\n' +
-                        'Please note that `embed` is the JSON for an embed object, don\'t put the `{embed}` subtag there, as nothing will show.',
-                    exampleCode: '{dm;stupid cat;Hello;{embedbuild;title:You\'re cool}}',
-                    exampleOut: 'DM: Hello\nEmbed: You\'re cool',
-                    returns: 'nothing',
-                    execute: (ctx, [user, content, embed]) => this.sendDm(ctx, user.value, content.value, embed.value)
-                }
-            ]
+            category: SubtagType.USER
         });
     }
 
-    public async sendDm(
-        context: BBTagContext,
-        userStr: string,
-        messageStr: string,
-        embedStr?: string
-    ): Promise<void> {
-        const member = await context.queryMember(userStr);
-        if (member === undefined)
-            throw new UserNotFoundError(userStr);
-
-        const messageAsEmbeds = parse.embed(messageStr, false);
-        const embeds = messageAsEmbeds ?? parse.embed(embedStr);
-        const content = messageAsEmbeds === undefined ? messageStr : undefined;
-
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('user', 'user'),
+        Subtag.argument('message', 'string'),
+        Subtag.argument('embed', 'embed[]', { allowMalformed: true }).allowOmitted()
+    ], {
+        description: 'DMs `user` the given `message` and `embed`. At least one of `message` and `embed` must be provided. ' +
+            'You may only send one DM per execution. Requires author to be staff, and the user to be on the current guild.\n' +
+            'Please note that `embed` is the JSON for an embed object, don\'t put the `{embed}` subtag there, as nothing will show.',
+        exampleCode: '{dm;stupid cat;Hello;{embedbuild;title:You\'re cool}}',
+        exampleOut: 'DM: Hello\nEmbed: You\'re cool'
+    })
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('user', 'user'),
+        Subtag.useValue(undefined),
+        Subtag.argument('embed', 'embed[]').allowOmitted()
+    ], {
+        description: 'DMs `user` the given `embed`. ' +
+            'You may only send one DM per execution. Requires author to be staff, and the user to be on the current guild.\n' +
+            'Please note that `embed` is the JSON for an embed object, don\'t put the `{embed}` subtag there, as nothing will show.',
+        exampleCode: '{dm;stupid cat;{embedbuild;title:You\'re cool}}',
+        exampleOut: 'Embed in DM: You\'re cool'
+    })
+    public async sendDm(context: BBTagContext, user: User, content?: string, embeds?: MessageEmbedOptions[]): Promise<void> {
         try {
-            const dmChannel = member.user.dmChannel ?? await member.createDM();
-            let cache = dmCache[member.id];
+            const dmChannel = user.dmChannel ?? await user.createDM();
+            let cache = dmCache[user.id];
             if (cache === undefined ||
                 cache.count > 5 ||
                 cache.user !== context.user.id ||
@@ -51,7 +51,7 @@ export class DMSubtag extends Subtag {
                     'and was sent by ' +
                     `**__${context.user.username}#${context.user.discriminator}}__** (${context.user.id}):`
                 );
-                cache = dmCache[member.id] = { user: context.user.id, guild: context.guild.id, count: 1 };
+                cache = dmCache[user.id] = { user: context.user.id, guild: context.guild.id, count: 1 };
             }
             await context.util.send(dmChannel.id, {
                 content,

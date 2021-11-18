@@ -1,56 +1,28 @@
-import { Cluster } from '@cluster';
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { NotANumberError, UserNotFoundError } from '@cluster/bbtag/errors';
-import { parse, SubtagType } from '@cluster/utils';
+import { SubtagType } from '@cluster/utils';
+import { GuildMember } from 'discord.js';
 
 export class WarnSubtag extends Subtag {
-    public constructor(
-        public readonly cluster: Cluster
-    ) {
+    public constructor() {
         super({
             name: 'warn',
             category: SubtagType.USER,
-            desc: '`user` defaults to the executing user.',
-            definition: [
-                {
-                    parameters: ['user?'],
-                    description: 'Gives `user` one warning. This will return the amount of warnings `user` has after executing.',
-                    exampleCode: 'Be warned! {warn}',
-                    exampleOut: 'Be warned! 1',
-                    returns: 'number',
-                    execute: (ctx, [user]) => this.warnUser(ctx, user.value, '1', '')
-                },
-                {
-                    parameters: ['user', 'count:1', 'reason?'],
-                    description: 'Gives `user` `count` warnings.',
-                    exampleCode: 'Be warned Stupid cat! {warn;Stupid cat;9001;For being too cool}',
-                    exampleOut: 'Be warned Stupid cat! 9001',
-                    returns: 'number',
-                    execute: (ctx, [user, count, reason]) => this.warnUser(ctx, user.value, count.value, reason.value)
-                }
-            ]
+            desc: '`user` defaults to the executing user.'
         });
     }
 
-    public async warnUser(
-        context: BBTagContext,
-        userStr: string,
-        countStr: string,
-        reason: string
-    ): Promise<number> {
-        const count = parse.int(countStr);
-
-        const member = userStr === ''
-            ? context.member
-            : await context.queryMember(userStr);
-
-        if (member === undefined)
-            throw new UserNotFoundError(userStr);
-
-        if (isNaN(count))
-            throw new NotANumberError(countStr);
-
-        const result = await this.cluster.moderation.warns.warn(member, this.cluster.discord.user, count, reason !== '' ? reason : 'Tag Warning');
+    @Subtag.signature('number', [
+        Subtag.context(),
+        Subtag.argument('user', 'member'),
+        Subtag.argument('count', 'integer').ifOmittedUse(1),
+        Subtag.argument('reason', 'string').allowOmitted()
+    ], {
+        description: 'Gives `user` `count` warnings.',
+        exampleCode: 'Be warned Stupid cat! {warn;Stupid cat;9001;For being too cool}',
+        exampleOut: 'Be warned Stupid cat! 9001'
+    })
+    public async warnUser(context: BBTagContext, user: GuildMember, count: number, reason?: string): Promise<number> {
+        const result = await context.engine.cluster.moderation.warns.warn(user, context.discord.user, count, reason !== '' ? reason : 'Tag Warning');
         return result.warnings;
     }
 }

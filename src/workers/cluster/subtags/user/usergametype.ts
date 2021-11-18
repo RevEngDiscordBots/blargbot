@@ -1,6 +1,6 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { UserNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { GuildMember } from 'discord.js';
 
 const gameTypes = {
     default: '',
@@ -17,41 +17,19 @@ export class UserGameTypeSubtag extends Subtag {
         super({
             name: 'usergametype',
             category: SubtagType.USER,
-            desc: 'Game types can be any of `' + Object.values(gameTypes).filter(type => type).join(', ') + '`',
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns how the executing user is playing a game (playing, streaming).',
-                    exampleCode: 'You are {usergametype} right now!',
-                    exampleOut: 'You are streaming right now!',
-                    returns: 'string',
-                    execute: (ctx) => this.getUserGameType(ctx, ctx.user.id, true)
-                },
-                {
-                    parameters: ['user', 'quiet?'],
-                    description: 'Returns how `user` is playing a game. If `quiet` is specified, if `user` can\'t be found it will simply return nothing.',
-                    exampleCode: 'Stupid cat is {usergametype;Stupid cat} cats',
-                    exampleOut: 'Stupid cat is streaming cats',
-                    returns: 'string',
-                    execute: (ctx, [userId, quiet]) => this.getUserGameType(ctx, userId.value, quiet.value !== '')
-                }
-            ]
+            desc: 'Game types can be any of `' + Object.values(gameTypes).filter(type => type).join(', ') + '`'
         });
     }
 
-    public async getUserGameType(
-        context: BBTagContext,
-        userId: string,
-        quiet: boolean
-    ): Promise<typeof gameTypes[keyof typeof gameTypes]> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const member = await context.queryMember(userId, { noLookup: quiet });
-
-        if (member === undefined) {
-            throw new UserNotFoundError(userId)
-                .withDisplay(quiet ? '' : undefined);
-        }
-
-        return member.presence?.activities[0]?.type.toLowerCase() ?? '';
+    @Subtag.signature('string', [
+        Subtag.argument('user', 'member', { quietParseError: '' }).ifOmittedUse('{userid}'),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns how `user` is playing a game. If `quiet` is specified, if `user` can\'t be found it will simply return nothing.',
+        exampleCode: 'Stupid cat is {usergametype;Stupid cat} cats',
+        exampleOut: 'Stupid cat is streaming cats'
+    })
+    public getUserGameType(user: GuildMember): typeof gameTypes[keyof typeof gameTypes] {
+        return user.presence?.activities[0]?.type.toLowerCase() ?? '';
     }
 }

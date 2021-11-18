@@ -1,47 +1,25 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { UserNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { GuildMember } from 'discord.js';
 
 export class UserAvatarSubtag extends Subtag {
     public constructor() {
         super({
             name: 'useravatar',
             category: SubtagType.USER,
-            desc: 'If no game is being played, this will return \'nothing\'',
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns the avatar of the executing user.',
-                    exampleCode: 'Your avatar is {useravatar}',
-                    exampleOut: 'Your discrim is (avatar url)',
-                    returns: 'string',
-                    execute: (ctx) => this.getUserAvatarUrl(ctx, ctx.user.id, true)
-                },
-                {
-                    parameters: ['user', 'quiet?'],
-                    description: 'Returns the avatar of `user`. If `user` can\'t be found it will simply return nothing.',
-                    exampleCode: 'Stupid cat\'s avatar is {useravatar;Stupid cat}',
-                    exampleOut: 'Stupid cat\'s avatar is (avatar url)',
-                    returns: 'string',
-                    execute: (ctx, [userId, quiet]) => this.getUserAvatarUrl(ctx, userId.value, quiet.value !== '')
-                }
-            ]
+            desc: 'If no game is being played, this will return \'nothing\''
         });
     }
 
-    public async getUserAvatarUrl(
-        context: BBTagContext,
-        userId: string,
-        quiet: boolean
-    ): Promise<string> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const member = await context.queryMember(userId, { noLookup: quiet });
-
-        if (member === undefined) {
-            throw new UserNotFoundError(userId)
-                .withDisplay(quiet ? '' : undefined);
-        }
-
-        return member.displayAvatarURL({ dynamic: true, format: 'png', size: 512 });
+    @Subtag.signature('string', [
+        Subtag.argument('user', 'member', { quietParseError: '' }).ifOmittedUse('{userid}'),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns the avatar of `user`. If `user` can\'t be found it will simply return nothing.',
+        exampleCode: 'Stupid cat\'s avatar is {useravatar;Stupid cat}',
+        exampleOut: 'Stupid cat\'s avatar is (avatar url)'
+    })
+    public getUserAvatarUrl(user: GuildMember): string {
+        return user.displayAvatarURL({ dynamic: true, format: 'png', size: 512 });
     }
 }

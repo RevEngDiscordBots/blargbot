@@ -1,40 +1,33 @@
 import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { BBTagRuntimeError, UserNotFoundError } from '@cluster/bbtag/errors';
+import { BBTagRuntimeError } from '@cluster/bbtag/errors';
 import { discordUtil, SubtagType } from '@cluster/utils';
+import { GuildMember } from 'discord.js';
 
 export class UserSetNickSubtag extends Subtag {
     public constructor() {
         super({
             name: 'usersetnick',
-            category: SubtagType.USER,
             aliases: ['setnick'],
-            definition: [
-                {
-                    parameters: ['nick', 'user?'],
-                    description: 'Sets `user`\'s nickname to `nick`. Leave `nick` blank to reset their nickname.',
-                    exampleCode: '{usersetnick;super cool nickname}\n{//;Reset the the nickname}\n{usersetnick;}',
-                    exampleOut: '', //TODO meaningful output
-                    returns: 'nothing',
-                    execute: (ctx, [nick, user]) => this.setUserNick(ctx, nick.value, user.value)
-                }
-            ]
+            category: SubtagType.USER
         });
     }
 
-    public async setUserNick(context: BBTagContext, nick: string, userStr: string): Promise<void> {
-        const member = userStr === ''
-            ? context.member
-            : await context.queryMember(userStr);
-
-        if (member === undefined)
-            throw new UserNotFoundError(userStr);
-
+    @Subtag.signature('nothing', [
+        Subtag.context(),
+        Subtag.argument('nickname', 'string'),
+        Subtag.argument('user', 'member').ifOmittedUse('{userid}')
+    ], {
+        description: 'Sets `user`\'s nickname to `nick`. Leave `nick` blank to reset their nickname.',
+        exampleCode: '{usersetnick;super cool nickname}\n{//;Reset the the nickname}\n{usersetnick;}',
+        exampleOut: '' //TODO meaningful output
+    })
+    public async setUserNick(context: BBTagContext, nick: string, user: GuildMember): Promise<void> {
         try {
-            if (member.id === context.discord.user.id)
-                await member.setNickname(nick);
+            if (user.id === context.discord.user.id)
+                await user.setNickname(nick);
             else {
                 const fullReason = discordUtil.formatAuditReason(context.user, context.scopes.local.reason);
-                await member.setNickname(nick, fullReason);
+                await user.setNickname(nick, fullReason);
             }
         } catch (err: unknown) {
             if (err instanceof Error)

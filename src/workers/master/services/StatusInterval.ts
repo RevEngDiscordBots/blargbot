@@ -6,7 +6,6 @@ import { ActivityOptions } from 'discord.js';
 import moment from 'moment';
 
 export class StatusInterval extends CronService {
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     readonly #holidays: Record<string, string | undefined>;
     public readonly type = 'discord';
 

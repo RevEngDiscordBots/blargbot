@@ -1,46 +1,24 @@
-import { BBTagContext, Subtag } from '@cluster/bbtag';
-import { UserNotFoundError } from '@cluster/bbtag/errors';
+import { Subtag } from '@cluster/bbtag';
 import { SubtagType } from '@cluster/utils';
+import { User } from 'discord.js';
 
 export class UserNameSubtag extends Subtag {
     public constructor() {
         super({
             name: 'username',
-            category: SubtagType.USER,
-            definition: [
-                {
-                    parameters: [],
-                    description: 'Returns the username of the executing user.',
-                    exampleCode: 'Your username is {username}!',
-                    exampleOut: 'Your username is Cool Dude 1337!',
-                    returns: 'string',
-                    execute: (ctx) => this.getUserName(ctx, ctx.user.id, true)
-                },
-                {
-                    parameters: ['user', 'quiet?'],
-                    description: 'Returns `user`\'s username. If `quiet` is specified, if `user` can\'t be found it will simply return nothing.',
-                    exampleCode: 'Stupid cat\'s username is {username;Stupid cat}!',
-                    exampleOut: 'Stupid cat\'s username is Stupid cat!',
-                    returns: 'string',
-                    execute: (ctx, [userId, quiet]) => this.getUserName(ctx, userId.value, quiet.value !== '')
-                }
-            ]
+            category: SubtagType.USER
         });
     }
 
-    public async getUserName(
-        context: BBTagContext,
-        userId: string,
-        quiet: boolean
-    ): Promise<string> {
-        quiet ||= context.scopes.local.quiet ?? false;
-        const user = await context.queryUser(userId, { noLookup: quiet });
-
-        if (user === undefined) {
-            throw new UserNotFoundError(userId)
-                .withDisplay(quiet ? '' : undefined);
-        }
-
+    @Subtag.signature('string', [
+        Subtag.argument('user', 'user', { quietParseError: '' }).ifOmittedUse('{userid}'),
+        Subtag.quietArgument().noEmit()
+    ], {
+        description: 'Returns `user`\'s username. If `quiet` is specified, if `user` can\'t be found it will simply return nothing.',
+        exampleCode: 'Stupid cat\'s username is {username;Stupid cat}!',
+        exampleOut: 'Stupid cat\'s username is Stupid cat!'
+    })
+    public getUserName(user: User): string {
         return user.username.replace(/@/g, '@\u200b');
     }
 }

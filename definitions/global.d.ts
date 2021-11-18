@@ -99,7 +99,6 @@ declare global {
     }
 
     type Awaitable<T> = T | PromiseLike<T>;
-    type Awaited<T> = T extends PromiseLike<infer R> ? Awaited<R> : T;
     type ExcludeExact<T, U> = T extends U ? U extends T ? never : T : T;
 
     namespace NodeJS {

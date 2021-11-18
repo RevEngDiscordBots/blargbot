@@ -198,7 +198,7 @@ function phantomGetrect(replacements: PhantomOptions['replacements']): { top: nu
         return workspace?.getBoundingClientRect();
     } catch (err: unknown) {
         // eslint-disable-next-line no-console
-        console.error(err);
+        console.error(err); // console inside the phantom browser, not the blargbot console
         return { top: 0, left: 0, width: 300, height: 300 };
     }
 }

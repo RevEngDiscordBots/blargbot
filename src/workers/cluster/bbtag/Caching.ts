@@ -5,7 +5,6 @@ import { BBTagContext } from './BBTagContext';
 import { TagVariableScope, tagVariableScopes } from './tagVariables';
 
 export class VariableCache {
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     readonly #cache: Record<string, CacheEntry | undefined>;
 
     public get list(): CacheEntry[] { return Object.values(this.#cache).filter(guard.hasValue); }
@@ -96,7 +95,6 @@ export class VariableCache {
 }
 
 class CacheEntry {
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     #signature: string;
     public value: JToken | undefined;
 

@@ -24,7 +24,6 @@ function serializeEntity(entity: { id: string; }): { id: string; serialized: str
 }
 
 export class BBTagContext implements Required<BBTagContextOptions> {
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     #isStaffPromise?: Promise<boolean>;
 
     public readonly message: BBTagContextMessage;

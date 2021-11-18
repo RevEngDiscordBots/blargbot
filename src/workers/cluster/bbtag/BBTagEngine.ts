@@ -154,8 +154,7 @@ export class BBTagEngine {
             throw error;
 
         this.logger.error(error);
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        let description = `${error}`;
+        let description = Object.prototype.toString.call(error);
         const descLimit = discordUtil.getLimit('embed.description');
         if (description.length > descLimit)
             description = `${description.substring(0, descLimit - 15)}... (truncated)`;

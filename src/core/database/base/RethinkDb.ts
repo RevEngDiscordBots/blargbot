@@ -3,11 +3,9 @@ import * as r from 'rethinkdb';
 import { Connection, Cursor, Expression, Query, Time } from 'rethinkdb';
 
 export class RethinkDb {
-    /* eslint-disable @typescript-eslint/explicit-member-accessibility */
     #connectionPromise?: Promise<r.Connection>;
     #connection?: r.Connection;
     readonly #options: RethinkConfiguration;
-    /* eslint-enable @typescript-eslint/explicit-member-accessibility */
 
     public constructor(options: RethinkConfiguration) {
         this.#options = options;

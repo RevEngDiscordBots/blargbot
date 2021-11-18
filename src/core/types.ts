@@ -22,7 +22,6 @@ export interface SendOptions extends MessageOptions {
 export type SendPayload = SendOptions | MessageEmbedOptions | string | FileOptions;
 export type LogEntry = { text: string; level: string; timestamp: string; }
 export type ProcessMessage = { type: string; id: Snowflake; data: unknown; };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ProcessMessageContext<TData, TReply> = { data: TData; id: Snowflake; reply: (data: TReply) => void; };
 export type WorkerPoolEventContext<TWorker extends WorkerConnection<string, IPCContracts>, TData, TReply> = ProcessMessageContext<TData, TReply> & { worker: TWorker; };
 export type ProcessMessageHandler<TData = unknown, TReply = unknown> = (context: ProcessMessageContext<TData, TReply>) => unknown;
@@ -219,27 +218,25 @@ export interface BinderResult<TState> {
     readonly state: TState;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 export interface Suggestor {
-    ID: string;
-    Username: string;
+    ['ID']: string;
+    ['Username']: string;
 }
 
 export interface Suggestion {
-    ID?: number;
-    AA: boolean;
-    Bug: boolean;
-    Type: string[];
-    Title: string;
-    Description: string;
-    Message: string;
-    Channel: string;
-    Author: string[];
-    Edits?: number;
-    Notes?: string;
-    'Last Edited'?: number;
+    ['ID']?: number;
+    ['AA']: boolean;
+    ['Bug']: boolean;
+    ['Type']: string[];
+    ['Title']: string;
+    ['Description']: string;
+    ['Message']: string;
+    ['Channel']: string;
+    ['Author']: string[];
+    ['Edits']?: number;
+    ['Notes']?: string;
+    ['Last Edited']?: number;
 }
-/* eslint-enable @typescript-eslint/naming-convention */
 
 export interface MessageFilter {
     readonly term: string;

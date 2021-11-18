@@ -16,7 +16,6 @@ Object.assign(mockito, <Partial<typeof mockito>>{
         const ctx: Record<PropertyKey, unknown> = {};
 
         if (typeof obj === 'function')
-            // eslint-disable-next-line @typescript-eslint/ban-types
             Object.setPrototypeOf(ctx, <object | null>obj.prototype);
 
         for (const symbol of ['Symbol(Symbol.toPrimitive)', 'then', 'catch'])
