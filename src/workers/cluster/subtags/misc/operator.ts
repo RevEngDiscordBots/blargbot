@@ -3,6 +3,13 @@ import { InvalidOperatorError } from '@cluster/bbtag/errors';
 import { bbtagUtil, SubtagType } from '@cluster/utils';
 import { LogicOperator, NumericOperator, OrdinalCompareOperator, StringCompareOperator } from '@cluster/utils/bbtag/operators';
 
+const { all: allOperators, logic, numeric, stringCompare, ordinalCompare } = bbtagUtil.operators;
+
+const logicOperators = Object.keys(logic).filter((value): value is Exclude<LogicOperator, '^'> => value !== '^');
+const numericOperators = Object.keys(numeric);
+const stringCompareOperators = Object.keys(stringCompare);
+const ordinalCompareOperators = Object.keys(ordinalCompare);
+
 export class OperatorSubtag extends Subtag {
     public constructor() {
         super({
@@ -78,10 +85,3 @@ export class OperatorSubtag extends Subtag {
             .reduce((l, r) => l && r);
     }
 }
-
-const { all: allOperators, logic, numeric, stringCompare, ordinalCompare } = bbtagUtil.operators;
-
-const logicOperators = Object.keys(logic).filter((value): value is Exclude<LogicOperator, '^'> => value !== '^');
-const numericOperators = Object.keys(numeric);
-const stringCompareOperators = Object.keys(stringCompare);
-const ordinalCompareOperators = Object.keys(ordinalCompare);

@@ -140,8 +140,8 @@ function modify(str: MutableStatement, index: number, mod: (str: string) => stri
 
 function statement(source: string, start: SourceMarker, end = start, items: Array<MutableStatement[number]> = []): MutableStatement {
     return Object.defineProperties(items, {
-        start: { value: start },
-        end: { value: end },
+        start: { value: start, writable: true },
+        end: { value: end, writable: true },
         source: {
             get(this: Statement) {
                 return source.slice(this.start.index, this.end.index);

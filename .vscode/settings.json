@@ -1,14 +1,15 @@
 {
-    "files.exclude": {
-        "node_modules": true,
-        "**/*.js": {
-            "when": "$(basename).ts"
-        },
-        "**/*.js.map": true
+  "files.exclude": {
+    "node_modules": true,
+    "**/*.js": {
+      "when": "$(basename).ts"
     },
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
-    },
-    "npm.packageManager": "yarn",
-    "files.eol": "\n"
+    "**/*.js.map": true
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "npm.packageManager": "yarn",
+  "files.eol": "\n",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

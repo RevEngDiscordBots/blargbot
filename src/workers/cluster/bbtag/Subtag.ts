@@ -8,7 +8,6 @@ import { EmojiIdentifierResolvable, Guild, GuildChannels, GuildEmoji, GuildMembe
 import { Duration } from 'moment';
 
 import { BBTagContext } from './BBTagContext';
-import { compileSignatures, parseDefinitions } from './compilation';
 import { BBTagRuntimeError } from './errors';
 
 export abstract class Subtag implements SubtagOptions {
@@ -30,8 +29,13 @@ export abstract class Subtag implements SubtagOptions {
         this.deprecated = options.deprecated ?? false;
         this.staff = options.staff ?? false;
         this.hidden = options.hidden ?? false;
-        this.signatures = parseDefinitions(options.definition);
-        this.handler = compileSignatures(this.signatures);
+        this.signatures = [];
+        this.handler = {
+            handlers: [],
+            execute() {
+                throw new Error('NotImplemented');
+            }
+        };
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -46,8 +50,6 @@ export abstract class Subtag implements SubtagOptions {
             debugPerf.push(timer.elapsed);
         }
     }
-
-    private readonly enrichDocs = 5;
 
     public static signature<Return extends SubtagReturnType, Parameters extends readonly SubtagParameterDescriptor[] | []>(returns: Return, parameters: Parameters, details: SubtagSignatureOptions): SubtagSignatureDecorator<Return, Parameters> {
         returns;
@@ -68,6 +70,7 @@ export abstract class Subtag implements SubtagOptions {
     public static argumentGroup(parameters: ReadonlyArray<SubtagParameterDescriptor<unknown, string>>): SubtagParameterDescriptor<unknown[], undefined> {
         parameters;
         throw new Error('NotImplemented');
+
     }
 
     public static context(): SubtagParameterDescriptor<BBTagContext, undefined>;
@@ -75,6 +78,7 @@ export abstract class Subtag implements SubtagOptions {
     public static context(getValue?: (context: BBTagContext) => unknown): SubtagParameterDescriptor<unknown, undefined> {
         getValue;
         throw new Error('NotImplemented');
+
     }
 
     public static guild(): SubtagParameterDescriptor<Guild, undefined>;
@@ -82,6 +86,7 @@ export abstract class Subtag implements SubtagOptions {
     public static guild(getValue?: (guild: Guild) => unknown): SubtagParameterDescriptor<unknown, undefined> {
         getValue;
         throw new Error('NotImplemented');
+
     }
 
     public static subtagAST(): SubtagParameterDescriptor<SubtagCall, undefined>;
@@ -89,6 +94,7 @@ export abstract class Subtag implements SubtagOptions {
     public static subtagAST(getValue?: (subtag: SubtagCall) => unknown): SubtagParameterDescriptor<unknown, undefined> {
         getValue;
         throw new Error('NotImplemented');
+
     }
 
     public static subtagName(): SubtagParameterDescriptor<string, undefined>
@@ -96,6 +102,7 @@ export abstract class Subtag implements SubtagOptions {
     public static subtagName(getValue?: (name: string) => unknown): SubtagParameterDescriptor<unknown, undefined> {
         getValue;
         throw new Error('NotImplemented');
+
     }
 
     public static quietArgument(): SubtagParameterDescriptor<boolean, 'quiet'>;
@@ -103,6 +110,7 @@ export abstract class Subtag implements SubtagOptions {
     public static quietArgument(name = 'quiet'): SubtagParameterDescriptor<boolean, string> {
         name;
         throw new Error('NotImplemented');
+
     }
 
     public static useFactory<T extends Primitive>(factory: () => Awaitable<T>): SubtagParameterDescriptor<T, undefined>
@@ -110,6 +118,7 @@ export abstract class Subtag implements SubtagOptions {
     public static useFactory<T>(factory: () => Awaitable<T>): SubtagParameterDescriptor<T, undefined> {
         factory;
         throw new Error('NotImplemented');
+
     }
 
     public static useValue<T extends Primitive>(value: T): SubtagParameterDescriptor<T, undefined>
@@ -117,22 +126,20 @@ export abstract class Subtag implements SubtagOptions {
     public static useValue<T>(value: T): SubtagParameterDescriptor<T, undefined> {
         value;
         throw new Error('NotImplemented');
+
     }
 
     public static fallback<T extends SubtagArgumentType>(type: T, options?: SubtagArgumentOptions<T>): SubtagParameterDescriptor<SubtagArgumentTypeMap[T] | undefined, undefined> {
         type;
         options;
         throw new Error('NotImplemented');
+
     }
 
     public static logger(): SubtagParameterDescriptor<Logger, undefined> {
         throw new Error('NotImplemented');
     }
 }
-
-Subtag.argumentGroup([
-    Subtag.quietArgument().noEmit()
-]);
 
 type CustomErrorFactory<T> = string | ((value: T, context: BBTagContext, rawValue: string, ast: Statement) => string | BBTagRuntimeError);
 

@@ -105,7 +105,7 @@ function subtagInvokeTestCase<Details = undefined, AutoMock extends Record<strin
         ]);
 
         const argRefs = testCase.args.map<ArgRef>((arg, i) => ({
-            code: [`ARG${i}`],
+            code: Object.assign([`ARG${i}`], { start: { line: 0, index: 0, column: 0 }, get end() { return this.start; }, source: '' }),
             get resolveOrder() {
                 switch (typeof arg) {
                     case 'undefined': return undefined;
@@ -123,7 +123,7 @@ function subtagInvokeTestCase<Details = undefined, AutoMock extends Record<strin
         }));
 
         const call: SubtagCall = {
-            name: ['concat'],
+            name: Object.assign(['concat'], { start: { line: 0, index: 0, column: 0 }, get end() { return this.start; }, source: '' }),
             args: argRefs.map(r => r.code),
             start: { column: 0, index: 0, line: 0 },
             end: { column: 0, index: 0, line: 0 },
@@ -154,7 +154,7 @@ function subtagInvokeTestCase<Details = undefined, AutoMock extends Record<strin
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        options.arrange?.(context, testCase.details!, argRefs, call);
+        await options.arrange?.(context, testCase.details!, argRefs, call);
 
         // act
         let result;
@@ -180,7 +180,7 @@ function subtagInvokeTestCase<Details = undefined, AutoMock extends Record<strin
             }
         }
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        options.assert?.(context, testCase.details!, <Result>result, argRefs, call);
+        await options.assert?.(context, testCase.details!, <Result>result, argRefs, call);
     };
 }
 
