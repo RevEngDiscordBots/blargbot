@@ -7,6 +7,7 @@ export * from './mapIn';
 export * from './mapInstanceof';
 export * from './mapJObject';
 export * from './mapJson';
+export * from './mapOptionalJson';
 export * from './mapJToken';
 export * from './mapNumber';
 export * from './mapObject';

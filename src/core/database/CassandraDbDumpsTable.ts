@@ -1,5 +1,6 @@
 import { Logger } from '@core/Logger';
-import { Dump, DumpsTable } from '@core/types';
+import { Dump, DumpsTable, ParsedDump } from '@core/types';
+import { mapping } from '@core/utils';
 import { Client as Cassandra } from 'cassandra-driver';
 import { Duration } from 'moment-timezone';
 
@@ -20,6 +21,24 @@ export class CassandraDbDumpsTable implements DumpsTable {
             { prepare: true });
     }
 
+    public async getById(id: string): Promise<ParsedDump | undefined> {
+        const res = await this.cassandra.execute(
+            'SELECT id, content, embeds, channelid ' +
+            'FROM message_outputs ' +
+            'WHERE id = :id ' +
+            'LIMIT 1',
+            { id },
+            { prepare: true });
+
+        if (res.rows.length === 0) {
+            return undefined;
+        }
+
+        const dump = mapDump(res.rows[0]);
+
+        return dump.valid ? dump.value : undefined;
+    }
+
     public async migrate(): Promise<void> {
         try {
             await this.cassandra.execute(
@@ -34,3 +53,10 @@ export class CassandraDbDumpsTable implements DumpsTable {
         }
     }
 }
+
+const mapDump = mapping.mapObject<ParsedDump>({
+    id: mapping.mapString,
+    content: mapping.mapString,
+    embeds: mapping.mapOptionalJson(mapping.mapArray(mapping.mapUnknown)),
+    channelid: mapping.mapString
+});
